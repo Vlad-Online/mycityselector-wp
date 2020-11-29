@@ -19,50 +19,97 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/hooks.php';
+
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );
 register_deactivation_hook( __FILE__, 'deactivate_mcs_plugin' );
 register_uninstall_hook( __FILE__, 'uninstall_mcs_plugin' );
 
 add_action( 'admin_menu', 'mcs_options_page' );
 add_action( 'init', 'mcs_start_ob' );
+add_action( 'admin_init', 'mcs_settings_init' );
 
 function mcs_options_page() {
 	add_menu_page( 'MyCitySelector Plugin',
 		'MyCitySelector',
 		'manage_options',
-		plugin_dir_path( __FILE__ ) . 'admin/view.php',
-		null,
+		plugin_dir_path( __FILE__ ),
+		'mcs_main_html',
 		'',
 		20
 	);
-}
-
-function activate_mcs_plugin() {
-
-}
-
-function deactivate_mcs_plugin() {
-
-}
-
-function uninstall_mcs_plugin() {
-
+	add_submenu_page(
+		plugin_dir_path( __FILE__ ),
+		'MyCitySelector Plugin Options',
+		'MyCitySelector Plugin Options',
+		'manage_options',
+		plugin_dir_path( __FILE__ ) . '/options',
+		'mcs_options_page_html'
+	);
 }
 
 function mcs_start_ob() {
 	//spl_autoload_register(function ());
-	if (!is_admin()) {
-		ob_start(function ($body) {
+	if ( ! is_admin() ) {
+		ob_start( function ( $body ) {
 			return false;
-		});
+		} );
 	}
 }
 
-/**
- * Register our wporg_settings_init to the admin_init action hook.
- */
-add_action( 'admin_init', 'mcs_settings_init' );
+function mcs_settings_init() {
+	// Register a new setting for "mcs" page.
+	register_setting( 'mcs', 'mcs_base_domain', [
+		'type'        => 'string',
+		'description' => 'Base domain of your site, f.e.: example.com',
+		'default'     => ''
+	] );
 
+	// Register a new section in the "mcs" page.
+	add_settings_section(
+		'mcs_section_base',
+		'Base options',
+		null,
+		'mcs'
+	);
+
+	// Register a new field in the "mcs_section_developers" section, inside the "mcs" page.
+	add_settings_field(
+		'mcs_base_domain', // As of WP 4.6 this value is used only internally.
+		'Base domain',
+		'mcs_base_domain_cb',
+		'mcs',
+		'mcs_section_base'
+	);
+}
+
+/**
+ * Pill field callback function.
+ *
+ * WordPress has magic interaction with the following keys: label_for, class.
+ * - the "label_for" key value is used for the "for" attribute of the <label>.
+ * - the "class" key value is used for the "class" attribute of the <tr> containing the field.
+ * Note: you can add custom key value pairs to be used inside your callbacks.
+ *
+ */
+function mcs_base_domain_cb() {
+	$setting = get_option( 'mcs_base_domain' );
+	?>
+	<label>
+		<input type="text" name="mcs_base_domain" value="<?php echo isset( $setting ) ? esc_attr( $setting ) : ''; ?>">
+	</label>
+	<p class="description" id="tagline-description"><?php _e( 'Base domain of your site, f.e.: example.com' ); ?></p>
+	<?php
+}
+
+function mcs_main_html() {
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+	</div>
+	<?
+}
 
 function mcs_options_page_html() {
 	// check user capabilities

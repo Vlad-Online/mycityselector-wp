@@ -1,0 +1,6 @@
+{
+  "require": {
+    "robmorgan/phinx": "^0.12.4",
+    "ext-pdo_mysql": "*"
+  }
+}
