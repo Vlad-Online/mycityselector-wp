@@ -19,4 +19,14 @@ interface ModelInterface {
 	 * @return ModelInterface[]
 	 */
 	public static function all( int $limit ): array;
+
+	public static function create( $data = [] ): ModelInterface;
+
+	public function update( int $id, $data = [] ): ModelInterface;
+
+	public function delete( $force = false ): bool;
+
+	public function getTableName(): string;
+
+	public function getProperties() : array;
 }

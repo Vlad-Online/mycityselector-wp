@@ -18,9 +18,13 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
+if (!defined('MCS_PREFIX')) {
+	define( 'MCS_PREFIX', 'mcs_' );
+}
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/hooks.php';
+require_once __DIR__.'/src/WpControllers/CitiesController.php';
 
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );
 register_deactivation_hook( __FILE__, 'deactivate_mcs_plugin' );
