@@ -18,7 +18,7 @@ interface ModelInterface {
 	 *
 	 * @return ModelInterface[]
 	 */
-	public static function all( int $limit ): array;
+	public static function all(): array;
 
 	public static function create( $data = [] ): ModelInterface;
 

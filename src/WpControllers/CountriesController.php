@@ -4,7 +4,7 @@ namespace Mcs\WpControllers;
 
 use Exception;
 use Mcs\Interfaces\ModelInterface;
-use Mcs\WpModels\City;
+use Mcs\WpModels\Country;
 use stdClass;
 use WP_Error;
 use WP_HTTP_Response;
@@ -13,15 +13,15 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 
-class CitiesController extends WP_REST_Controller {
+class CountriesController extends WP_REST_Controller {
 
 	protected $namespace = 'mcs/v1';
-	protected $resource_name = 'cities';
+	protected $resource_name = 'countries';
 
 	// Here initialize our namespace and resource name.
 	public function __construct() {
 		/*$this->namespace     = '/mcs/v1';
-		$this->resource_name = 'cities';*/
+		$this->resource_name = 'countries';*/
 	}
 
 	// Register our routes.
@@ -44,7 +44,7 @@ class CitiesController extends WP_REST_Controller {
 			[
 				'args'   => [
 					'id' => [
-						'description' => __( 'Unique identifier for the city.' ),
+						'description' => __( 'Unique identifier for the country.' ),
 						'type'        => 'integer',
 					],
 				],
@@ -70,11 +70,11 @@ class CitiesController extends WP_REST_Controller {
 						'force'    => [
 							'type'        => 'boolean',
 							'default'     => false,
-							'description' => __( 'Required to be true, as cities do not support trashing.' ),
+							'description' => __( 'Required to be true, as countries do not support trashing.' ),
 						],
 						'reassign' => [
 							'type'              => 'integer',
-							'description'       => __( 'Reassign the deleted city\'s posts and links to this city ID.' ),
+							'description'       => __( 'Reassign the deleted country\'s posts and links to this country ID.' ),
 							'required'          => true,
 							'sanitize_callback' => [ $this, 'check_reassign' ],
 						],
@@ -94,7 +94,7 @@ class CitiesController extends WP_REST_Controller {
 	 */
 	public function get_items_permissions_check( $request ) {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot view the cities resource.' ), array( 'status' => $this->authorization_status_code() ) );
+			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot view the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
 		}
 
 		return true;
@@ -112,16 +112,16 @@ class CitiesController extends WP_REST_Controller {
 		/*$args  = array(
 			'post_per_page' => 5,
 		);*/
-		$cities = City::all();
+		$countries = Country::all();
 
 		$data = array();
 
-		if ( empty( $cities ) ) {
+		if ( empty( $countries ) ) {
 			return rest_ensure_response( $data );
 		}
 
-		foreach ( $cities as $city ) {
-			$response = $this->prepare_item_for_response( $city, $request );
+		foreach ( $countries as $country ) {
+			$response = $this->prepare_item_for_response( $country, $request );
 			$data[]   = $this->prepare_response_for_collection( $response );
 		}
 
@@ -153,16 +153,16 @@ class CitiesController extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id   = (int) $request['id'];
-		$city = City::findById( $id );
+		$country = Country::findById( $id );
 
-		if ( empty( $city ) ) {
+		if ( empty( $country ) ) {
 			return rest_ensure_response( array() );
 		}
 
-		$city = $this->prepare_item_for_response( $city, $request );
+		$country = $this->prepare_item_for_response( $country, $request );
 
 		// Return all of our post response data.
-		return rest_ensure_response( $city );
+		return rest_ensure_response( $country );
 	}
 
 	/**
@@ -212,7 +212,7 @@ class CitiesController extends WP_REST_Controller {
 			// This tells the spec of JSON Schema we are using which is draft 4.
 			'$schema'    => 'http://json-schema.org/draft-04/schema#',
 			// The title property marks the identity of the resource.
-			'title'      => 'city',
+			'title'      => 'country',
 			'type'       => 'object',
 			// In JSON Schema you can specify object properties in the properties attribute.
 			'properties' => array(
@@ -310,27 +310,27 @@ class CitiesController extends WP_REST_Controller {
 	public function create_item( $request ) {
 		if ( ! empty( $request['id'] ) ) {
 			return new WP_Error(
-				'rest_city_exists',
-				__( 'Cannot create existing city.' ),
+				'rest_country_exists',
+				__( 'Cannot create existing country.' ),
 				array( 'status' => 400 )
 			);
 		}
 
 		try {
-			$city = City::create($request);
+			$country = Country::create($request);
 		} catch ( Exception $exception) {
 			$error = new WP_Error();
 			$error->add_data( array( 'status' => 400 ), $exception->getCode() );
 		}
 
-		if ( empty( $city ) ) {
+		if ( empty( $country ) ) {
 			return rest_ensure_response( array() );
 		}
 
-		$city = $this->prepare_item_for_response( $city, $request );
+		$country = $this->prepare_item_for_response( $country, $request );
 
 		// Return all of our post response data.
-		return rest_ensure_response( $city );
+		return rest_ensure_response( $country );
 	}
 
 	/**
@@ -339,36 +339,36 @@ class CitiesController extends WP_REST_Controller {
 	 * @return object
 	 */
 	protected function prepare_item_for_database( $request ) {
-		$prepared_city = new stdClass();
+		$prepared_country = new stdClass();
 
 		if ( isset( $request['id'] ) ) {
-			$existing_city = $this->get_city( $request['id'] );
-			if ( is_wp_error( $existing_city ) ) {
-				return $existing_city;
+			$existing_country = $this->get_country( $request['id'] );
+			if ( is_wp_error( $existing_country ) ) {
+				return $existing_country;
 			}
 
-			$prepared_city->ID = $existing_city->id;
+			$prepared_country->ID = $existing_country->id;
 		}
-		$prepared_city->counry_id = (int)$request['country_id'];
-		$prepared_city->province_id = (int)$request['province_id'];
-		$prepared_city->subdomain = (string)$request['subdomain'];
-		$prepared_city->post_index = (int)$request['post_index'];
-		$prepared_city->lat = (float)$request['lat'];
-		$prepared_city->lng = (float)$request['lng'];
-		$prepared_city->published = (int)$request['published'];
-		$prepared_city->ordering = (int)$request['ordering'];
-		return $prepared_city;
+		$prepared_country->counry_id = (int)$request['country_id'];
+		$prepared_country->province_id = (int)$request['province_id'];
+		$prepared_country->subdomain = (string)$request['subdomain'];
+		$prepared_country->post_index = (int)$request['post_index'];
+		$prepared_country->lat = (float)$request['lat'];
+		$prepared_country->lng = (float)$request['lng'];
+		$prepared_country->published = (int)$request['published'];
+		$prepared_country->ordering = (int)$request['ordering'];
+		return $prepared_country;
 	}
 
 	/**
 	 * @param $id
 	 *
-	 * @return ModelInterface|City|WP_Error
+	 * @return ModelInterface|Country|WP_Error
 	 */
-	protected function get_city( $id ) {
+	protected function get_country( $id ) {
 		$error = new WP_Error(
-			'rest_city_invalid_id',
-			__( 'Invalid city ID.' ),
+			'rest_country_invalid_id',
+			__( 'Invalid country ID.' ),
 			array( 'status' => 404 )
 		);
 
@@ -376,21 +376,21 @@ class CitiesController extends WP_REST_Controller {
 			return $error;
 		}
 
-		$city = City::findById( (int) $id );
-		if ( empty( $city ) || empty( $city->id ) ) {
+		$country = Country::findById( (int) $id );
+		if ( empty( $country ) || empty( $country->id ) ) {
 			return $error;
 		}
 
-		return $city;
+		return $country;
 	}
 
 
 }
 
 // Function to register our new routes from the controller.
-function mcs_register_cities_routes() {
-	$controller = new CitiesController();
+function mcs_register_countries_routes() {
+	$controller = new CountriesController();
 	$controller->register_routes();
 }
 
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_cities_routes' );
+add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_countries_routes' );

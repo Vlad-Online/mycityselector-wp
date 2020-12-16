@@ -24,6 +24,7 @@ if (!defined('MCS_PREFIX')) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/hooks.php';
+require_once __DIR__.'/src/WpControllers/CountriesController.php';
 require_once __DIR__.'/src/WpControllers/CitiesController.php';
 
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );
@@ -32,7 +33,8 @@ register_uninstall_hook( __FILE__, 'uninstall_mcs_plugin' );
 
 add_action( 'admin_menu', 'mcs_options_page' );
 add_action( 'init', 'mcs_start_ob' );
-add_action( 'admin_init', 'mcs_settings_init' );
+add_action( 'admin_init', 'mcs_admin_init' );
+add_action( 'admin_init', 'mcs_register_options' );
 
 function mcs_options_page() {
 	add_menu_page( 'MyCitySelector Plugin',
@@ -62,31 +64,7 @@ function mcs_start_ob() {
 	}
 }
 
-function mcs_settings_init() {
-	// Register a new setting for "mcs" page.
-	register_setting( 'mcs', 'mcs_base_domain', [
-		'type'        => 'string',
-		'description' => 'Base domain of your site, f.e.: example.com',
-		'default'     => ''
-	] );
 
-	// Register a new section in the "mcs" page.
-	add_settings_section(
-		'mcs_section_base',
-		'Base options',
-		null,
-		'mcs'
-	);
-
-	// Register a new field in the "mcs_section_developers" section, inside the "mcs" page.
-	add_settings_field(
-		'mcs_base_domain', // As of WP 4.6 this value is used only internally.
-		'Base domain',
-		'mcs_base_domain_cb',
-		'mcs',
-		'mcs_section_base'
-	);
-}
 
 /**
  * Pill field callback function.

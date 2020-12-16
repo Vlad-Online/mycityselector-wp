@@ -3,32 +3,28 @@
 
 namespace Mcs\WpModels;
 
-class City extends BaseModel {
+class Province extends BaseModel {
 
 	protected $properties = [
 		'id',
 		'country_id',
-		'province_id',
 		'subdomain',
-		'post_index',
 		'lat',
 		'lng',
 		'published',
-		'ordering',
+		'ordering'
 	];
 
 	public $id;
 	public $country_id;
-	public $province_id;
 	public $subdomain;
-	public $post_index;
 	public $lat;
 	public $lng;
 	public $published;
 	public $ordering;
 
 	public function getTableName(): string {
-		return MCS_PREFIX . 'cities';
+		return MCS_PREFIX . 'provinces';
 	}
 
 	public function getProperties(): array {
