@@ -17,6 +17,7 @@ abstract class BaseModel implements ModelInterface {
 	 * @param int $id
 	 *
 	 * @return static
+	 * @throws Exception
 	 */
 	public static function findById( int $id ): ModelInterface {
 		global $wpdb;
@@ -26,8 +27,11 @@ abstract class BaseModel implements ModelInterface {
 			$wpdb->prepare(
 				"SELECT * FROM {$table} WHERE id = %s LIMIT 1",
 				$id
-			)
+			), 'ARRAY_A'
 		);
+		if (!$modelData) {
+			throw new Exception('Not found');
+		}
 		$model->fillProperties( $modelData );
 
 		return $model;
@@ -40,7 +44,7 @@ abstract class BaseModel implements ModelInterface {
 		global $wpdb;
 
 		$table      = ( new static() )->getTableName();
-		$modelsData = $wpdb->get_results( "SELECT * FROM {$table}" );
+		$modelsData = $wpdb->get_results( "SELECT * FROM {$table}", 'ARRAY_A' );
 		$models     = [];
 		foreach ( $modelsData as $modelData ) {
 			$model = new static();
@@ -49,6 +53,15 @@ abstract class BaseModel implements ModelInterface {
 		}
 
 		return $models;
+	}
+
+	public static function total(): int {
+		global $wpdb;
+
+		$table      = ( new static() )->getTableName();
+		$result = $wpdb->get_row( "SELECT count(*) as cnt FROM {$table}", 'ARRAY_A' );
+
+		return $result['cnt'];
 	}
 
 	/**
@@ -70,8 +83,28 @@ abstract class BaseModel implements ModelInterface {
 		return $model;
 	}
 
-	public function update( int $id, $data = [] ): ModelInterface {
-		// TODO: Implement update() method.
+	/**
+	 * @param array $data
+	 *
+	 * @return ModelInterface
+	 * @throws Exception
+	 */
+	public function update($data = [] ): ModelInterface {
+		global $wpdb;
+
+		foreach ($this->getProperties() as $property) {
+			if ($property != 'id') {
+				$this->$property = $data[$property] ?? $this->$property;
+			}
+		}
+
+		if ( ! $wpdb->update( $this->getTableName(), $data,  [
+			'id' => $this->id
+		]) ) {
+			throw new Exception( 'Error creating model' );
+		}
+
+		return $this;
 	}
 
 	/**
@@ -89,10 +122,10 @@ abstract class BaseModel implements ModelInterface {
 		return true;
 	}
 
-	public function fillProperties( $data ) {
+	public function fillProperties( array $data ) {
 		foreach ( $this->properties as $propertyName ) {
-			if ( isset( $data->$propertyName ) ) {
-				$this->$propertyName = $data->$propertyName;
+			if ( isset( $data[ $propertyName ] ) ) {
+				$this->$propertyName = $data[ $propertyName ];
 			}
 		}
 	}

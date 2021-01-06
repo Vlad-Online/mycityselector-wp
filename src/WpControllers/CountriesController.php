@@ -16,7 +16,7 @@ use WP_REST_Server;
 class CountriesController extends WP_REST_Controller {
 
 	protected $namespace = 'mcs/v1';
-	protected $resource_name = 'countries';
+	protected $rest_base = 'countries';
 
 	// Here initialize our namespace and resource name.
 	public function __construct() {
@@ -26,7 +26,7 @@ class CountriesController extends WP_REST_Controller {
 
 	// Register our routes.
 	public function register_routes() {
-		register_rest_route( $this->namespace, '/' . $this->resource_name, [
+		register_rest_route( $this->namespace, '/' . $this->rest_base, [
 			// Here we register the readable endpoint for collections.
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -34,13 +34,19 @@ class CountriesController extends WP_REST_Controller {
 				'permission_callback' => [ $this, 'get_items_permissions_check' ],
 				'args'                => $this->get_collection_params(),
 			],
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'create_item' ],
+				'permission_callback' => [ $this, 'create_item_permissions_check' ],
+				'args'                => $this->get_endpoint_args_for_item_schema(),
+			],
 			// Register our schema callback.
 			'schema' => array( $this, 'get_public_item_schema' ),
 		] );
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->resource_name . '/(?P<id>[\d]+)',
+			'/' . $this->rest_base . '/(?P<id>[\d]+)',
 			[
 				'args'   => [
 					'id' => [
@@ -67,17 +73,11 @@ class CountriesController extends WP_REST_Controller {
 					'callback'            => [ $this, 'delete_item' ],
 					'permission_callback' => [ $this, 'delete_item_permissions_check' ],
 					'args'                => [
-						'force'    => [
+						'force' => [
 							'type'        => 'boolean',
 							'default'     => false,
-							'description' => __( 'Required to be true, as countries do not support trashing.' ),
-						],
-						'reassign' => [
-							'type'              => 'integer',
-							'description'       => __( 'Reassign the deleted country\'s posts and links to this country ID.' ),
-							'required'          => true,
-							'sanitize_callback' => [ $this, 'check_reassign' ],
-						],
+							'description' => __( 'Required to be true, as countries do not support trashing.' )
+						]
 					],
 				],
 				'schema' => [ $this, 'get_public_item_schema' ],
@@ -93,12 +93,38 @@ class CountriesController extends WP_REST_Controller {
 	 * @return bool|WP_Error
 	 */
 	public function get_items_permissions_check( $request ) {
+		//xdebug_break();
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot view the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
 		}
 
 		return true;
 	}
+
+	/**
+	 * @param WP_REST_Request $request
+	 *
+	 * @return bool|WP_Error
+	 */
+	public function create_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot create the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return bool|WP_Error
+	 */
+	protected function check_delete_permission() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot delete the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
+		}
+
+		return true;
+	}
+
 
 	/**
 	 * Grabs the five most recent posts and outputs them as a rest response.
@@ -116,17 +142,37 @@ class CountriesController extends WP_REST_Controller {
 
 		$data = array();
 
-		if ( empty( $countries ) ) {
-			return rest_ensure_response( $data );
-		}
+//		if ( empty( $countries ) ) {
+//			return rest_ensure_response( $data );
+//		}
 
 		foreach ( $countries as $country ) {
 			$response = $this->prepare_item_for_response( $country, $request );
 			$data[]   = $this->prepare_response_for_collection( $response );
 		}
 
+		$total    = Country::total();
+		$range    = $request['range'];
+		$per_page = 10;
+		$start    = 0;
+		$end      = $start + $per_page;
+		if ( $range ) {
+			$rangeData = json_decode( $range, true );
+			$start     = (int) $rangeData[0] ?? $start;
+			$end       = (int) $rangeData[1] ?? $end;
+			$per_page  = $end - $start + 1;
+		}
+
+		//$per_page    = $request['per_page'];
+		$max_pages = ceil( $total / (int) $per_page );
+
 		// Return all of our comment response data.
-		return rest_ensure_response( $data );
+		$response = rest_ensure_response( $data );
+		$response->header( 'X-WP-Total', (int) $total );
+		$response->header( 'X-WP-TotalPages', (int) $max_pages );
+		$response->header( 'Content-Range', "countries {$start}-{$end}/{$total}" );
+
+		return $response;
 	}
 
 	/**
@@ -150,9 +196,10 @@ class CountriesController extends WP_REST_Controller {
 	 * @param WP_REST_Request $request Current request.
 	 *
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @throws Exception
 	 */
 	public function get_item( $request ) {
-		$id   = (int) $request['id'];
+		$id      = (int) $request['id'];
 		$country = Country::findById( $id );
 
 		if ( empty( $country ) ) {
@@ -172,7 +219,7 @@ class CountriesController extends WP_REST_Controller {
 	 *
 	 * @param WP_REST_Response $response Response object.
 	 *
-	 * @return array Response data, ready for insertion into collection data.
+	 * @return array|WP_REST_Response
 	 */
 	public function prepare_response_for_collection( $response ) {
 		if ( ! ( $response instanceof WP_REST_Response ) ) {
@@ -193,43 +240,6 @@ class CountriesController extends WP_REST_Controller {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Get our sample schema for a post.
-	 *
-	 * @param WP_REST_Request $request Current request.
-	 *
-	 * @return array
-	 */
-	public function get_item_schema() {
-		if ( $this->schema ) {
-			// Since WordPress 5.3, the schema can be cached in the $schema property.
-			return $this->schema;
-		}
-
-		$this->schema = array(
-			// This tells the spec of JSON Schema we are using which is draft 4.
-			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			// The title property marks the identity of the resource.
-			'title'      => 'country',
-			'type'       => 'object',
-			// In JSON Schema you can specify object properties in the properties attribute.
-			'properties' => array(
-				'id'      => array(
-					'description' => esc_html__( 'Unique identifier for the object.', 'my-textdomain' ),
-					'type'        => 'integer',
-					'context'     => array( 'view', 'edit', 'embed' ),
-					'readonly'    => true,
-				),
-				'content' => array(
-					'description' => esc_html__( 'The content for the object.', 'my-textdomain' ),
-					'type'        => 'string',
-				),
-			),
-		);
-
-		return $this->schema;
 	}
 
 	// Sets up the proper HTTP status code for authorization.
@@ -272,6 +282,11 @@ class CountriesController extends WP_REST_Controller {
 			'type'        => 'integer',
 		);
 
+		$query_params['range'] = array(
+			'description' => __( 'Range the result set by a specific number of items.' ),
+			'type'        => 'string',
+		);
+
 		$query_params['order'] = array(
 			'default'     => 'asc',
 			'description' => __( 'Order sort attribute ascending or descending.' ),
@@ -295,16 +310,28 @@ class CountriesController extends WP_REST_Controller {
 			'type'        => 'string',
 		);
 
+		$query_params['filter'] = array(
+			'default'     => null,
+			'description' => __( 'Filter collection by property.' ),
+			'type'        => 'string',
+		);
+
 		return $query_params;
 	}
 
+	/**
+	 * @param mixed $item
+	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 */
 	public function prepare_item_for_response( $item, $request ) {
 		$data = [];
 		foreach ( $item->getProperties() as $property ) {
 			$data[ $property ] = $item->$property;
 		}
 
-		return $data;
+		return rest_ensure_response( $data );
 	}
 
 	public function create_item( $request ) {
@@ -316,21 +343,30 @@ class CountriesController extends WP_REST_Controller {
 			);
 		}
 
+		$preparedData = (array) $this->prepare_item_for_database( $request );
+
 		try {
-			$country = Country::create($request);
-		} catch ( Exception $exception) {
+			$country = Country::create( $preparedData );
+		} catch ( Exception $exception ) {
 			$error = new WP_Error();
 			$error->add_data( array( 'status' => 400 ), $exception->getCode() );
+
+			return $error;
 		}
 
 		if ( empty( $country ) ) {
 			return rest_ensure_response( array() );
 		}
 
+		$id      = $country->id;
 		$country = $this->prepare_item_for_response( $country, $request );
 
-		// Return all of our post response data.
-		return rest_ensure_response( $country );
+		$response = rest_ensure_response( $country );
+
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $id ) ) );
+
+		return $response;
 	}
 
 	/**
@@ -349,14 +385,17 @@ class CountriesController extends WP_REST_Controller {
 
 			$prepared_country->ID = $existing_country->id;
 		}
-		$prepared_country->counry_id = (int)$request['country_id'];
-		$prepared_country->province_id = (int)$request['province_id'];
-		$prepared_country->subdomain = (string)$request['subdomain'];
-		$prepared_country->post_index = (int)$request['post_index'];
-		$prepared_country->lat = (float)$request['lat'];
-		$prepared_country->lng = (float)$request['lng'];
-		$prepared_country->published = (int)$request['published'];
-		$prepared_country->ordering = (int)$request['ordering'];
+
+		$prepared_country->subdomain       = (string) $request['subdomain'];
+		$prepared_country->published       = (int) $request['published'];
+		$prepared_country->ordering        = (int) $request['ordering'];
+		$prepared_country->code            = (string) $request['code'];
+		$prepared_country->domain          = (string) $request['domain'];
+		$prepared_country->lat             = (float) $request['lat'];
+		$prepared_country->lng             = (float) $request['lng'];
+		$prepared_country->default_city_id = empty( $request['default_city_id'] ) ? null : (int) $request['default_city_id'];
+
+
 		return $prepared_country;
 	}
 
@@ -382,6 +421,175 @@ class CountriesController extends WP_REST_Controller {
 		}
 
 		return $country;
+	}
+
+	/**
+	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function update_item( $request ) {
+		$valid_check = $this->get_country( $request['id'] );
+		if ( is_wp_error( $valid_check ) ) {
+			return $valid_check;
+		}
+
+		$model     = $valid_check;
+		$modelData = $this->prepare_item_for_database( $request );
+
+		try {
+			$model->update( (array) $modelData );
+		} catch ( Exception $exception ) {
+			return new WP_Error(
+				'',
+				'Error',
+				array( 'status' => 404 )
+			);
+		}
+
+		$response = $this->prepare_item_for_response( $model, $request );
+
+		return rest_ensure_response( $response );
+	}
+
+	public function update_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot update the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes a single post.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 *
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @since 4.7.0
+	 *
+	 */
+	public function delete_item( $request ) {
+		$model = $this->get_country( $request['id'] );
+		if ( is_wp_error( $model ) ) {
+			return $model;
+		}
+
+		$force = (bool) $request['force'];
+
+		if ( ! $this->check_delete_permission() ) {
+			return new WP_Error(
+				'rest_user_cannot_delete_country',
+				__( 'Sorry, you are not allowed to delete this country.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		$previous = $this->prepare_item_for_response( $model, $request );
+		$response = new WP_REST_Response();
+		$response->set_data(
+			array(
+				'deleted'  => true,
+				'previous' => $previous->get_data(),
+			)
+		);
+
+		try {
+			$model->delete( $force );
+		} catch ( Exception $exception ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'The country cannot be deleted.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		return $response;
+	}
+
+	public function delete_item_permissions_check( $request ) {
+		$model = $this->get_country( $request['id'] );
+		if ( is_wp_error( $model ) ) {
+			return $model;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot delete the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieves the country's schema, conforming to JSON Schema.
+	 *
+	 * @return array Item schema data.
+	 * @since 4.7.0
+	 *
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
+
+		$schema = [
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			//'title'      => $this->post_type,
+			'type'       => 'object',
+			// Base properties for every Post.
+			'properties' => [
+				'id'              => [
+					'description' => __( 'Unique identifier for the object.' ),
+					'type'        => 'integer',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => true,
+				],
+				'subdomain'       => [
+					'description' => __( 'Subdomain of country.' ),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ]
+				],
+				'published'       => [
+					'description' => __( 'Publish status of country.' ),
+					'type'        => [ 'integer', 'null', 'boolean' ],
+					'context'     => [ 'view', 'edit' ],
+				],
+				'ordering'        => [
+					'description' => __( 'Order of countries.' ),
+					'type'        => 'integer',
+					'context'     => [ 'view', 'edit' ],
+				],
+				'code'            => [
+					'description' => __( 'Country code.' ),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ]
+				],
+				'domain'          => [
+					'description' => __( 'Domain of country.' ),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ]
+				],
+				'lat'             => [
+					'description' => __( 'Latitude of country.' ),
+					'type'        => 'number',
+					'context'     => [ 'view', 'edit' ]
+				],
+				'lng'             => [
+					'description' => __( 'Longitude of country.' ),
+					'type'        => 'number',
+					'context'     => [ 'view', 'edit' ]
+				],
+				'default_city_id' => [
+					'description' => __( 'Default city id.' ),
+					'type'        => 'integer',
+					'context'     => [ 'view', 'edit' ]
+				]
+			],
+		];
+
+		$this->schema = $schema;
+
+		return $this->add_additional_fields_schema( $this->schema );
 	}
 
 

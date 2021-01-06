@@ -14,19 +14,19 @@ interface ModelInterface {
 	public static function findById( int $id ): ModelInterface;
 
 	/**
-	 * @param int $limit
-	 *
 	 * @return ModelInterface[]
 	 */
 	public static function all(): array;
 
+	public static function total() : int;
+
 	public static function create( $data = [] ): ModelInterface;
 
-	public function update( int $id, $data = [] ): ModelInterface;
+	public function update( $data = [] ): ModelInterface;
 
 	public function delete( $force = false ): bool;
 
 	public function getTableName(): string;
 
-	public function getProperties() : array;
+	public function getProperties(): array;
 }
