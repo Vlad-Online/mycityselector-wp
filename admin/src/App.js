@@ -9,7 +9,10 @@ const App = () => (
 	<Admin dataProvider={dataProvider}
 		   layout={McsLayout}
 	>
-		<Resource name="countries" list={CountriesList} create={CountriesCreate} edit={CountriesEdit}/>
+		<Resource name="Countries" list={CountriesList} create={CountriesCreate} edit={CountriesEdit}/>
+		<Resource name="CountryNames"/>
+		<Resource name="Provinces" list={CountriesList} create={CountriesCreate} edit={CountriesEdit}/>
+		{/*<Resource name="Cities" list={CountriesList} create={CountriesCreate} edit={CountriesEdit}/>*/}
 	</Admin>);
 
 export default App;

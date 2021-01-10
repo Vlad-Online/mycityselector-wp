@@ -25,6 +25,7 @@ if (!defined('MCS_PREFIX')) {
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/hooks.php';
 require_once __DIR__.'/src/WpControllers/CountriesController.php';
+require_once __DIR__.'/src/WpControllers/ProvincesController.php';
 require_once __DIR__.'/src/WpControllers/CitiesController.php';
 
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );

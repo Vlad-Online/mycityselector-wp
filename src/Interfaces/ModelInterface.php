@@ -3,15 +3,22 @@
 
 namespace Mcs\Interfaces;
 
-
 interface ModelInterface {
 
 	/**
 	 * @param int $id
 	 *
+	 * @return ModelInterface|mixed
+	 */
+	public static function findById( int $id );
+
+	/**
+	 * @param $property
+	 * @param $value
+	 *
 	 * @return ModelInterface
 	 */
-	public static function findById( int $id ): ModelInterface;
+	public static function findByPropertyValue( $property,  $value): ModelInterface;
 
 	/**
 	 * @return ModelInterface[]
@@ -26,7 +33,7 @@ interface ModelInterface {
 
 	public function delete( $force = false ): bool;
 
-	public function getTableName(): string;
+	public static function getTableName(): string;
 
 	public function getProperties(): array;
 }
