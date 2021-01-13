@@ -1,19 +1,40 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import {
 	List, Datagrid, TextField, Create, SimpleForm,
 	TextInput, BooleanInput, EditButton,
-	Edit
+	Edit, Filter,
+	BulkDeleteButton,
+	BooleanField
 } from 'react-admin';
-import {BooleanWrapper} from "../components/Buttons";
+import {PublishButton, UnPublishButton} from "../components/Buttons";
+
+const CountriesFilter = (props) => (
+	<Filter {...props}>
+		<TextInput label="Title" source="title"/>
+		<BooleanInput source="published" label="Published"/>
+	</Filter>
+)
+
+const CountriesBulkActionButtons = props => (
+	<Fragment>
+		<PublishButton {...props} />
+		<UnPublishButton {...props} />
+		<BulkDeleteButton {...props} />
+	</Fragment>
+);
+
 
 export const CountriesList = (props) => {
 	return (
-		<List {...props}>
+		<List {...props}
+			  filters={<CountriesFilter/>}
+			  bulkActionButtons={<CountriesBulkActionButtons/>}
+		>
 			<Datagrid rowClick="edit">
 				<TextField source="id" label="ID"/>
 				<TextField source="title" label="Title"/>
 				<TextField source="subdomain" label="Subdomain"/>
-				<BooleanWrapper source="published" label="Published"/>
+				<BooleanField source="published" label="Published"/>
 				<TextField source="ordering" label="Ordering"/>
 				<TextField source="code" label="Country Code"/>
 				<TextField source="domain" label="Domain"/>

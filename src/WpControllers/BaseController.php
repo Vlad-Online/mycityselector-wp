@@ -281,7 +281,16 @@ abstract class BaseController extends WP_REST_Controller {
 	public function prepare_item_for_response( $item, $request ) {
 		$data = [];
 		foreach ( $item->getProperties() as $property ) {
-			$data[ $property ] = $item->$property;
+			switch ( $property ) {
+				case 'ordering':
+					$data[ $property ] = (int) $item->$property;
+					break;
+				case 'published':
+					$data[ $property ] = (bool) $item->$property;
+					break;
+				default:
+					$data[ $property ] = $item->$property;
+			}
 		}
 
 		return rest_ensure_response( $data );
@@ -362,7 +371,7 @@ abstract class BaseController extends WP_REST_Controller {
 		);
 
 		try {
-			$model->delete( $force );
+			$model->delete( true );
 		} catch ( Exception $exception ) {
 			return new WP_Error(
 				'rest_cannot_delete',
@@ -401,24 +410,42 @@ abstract class BaseController extends WP_REST_Controller {
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
 	public function get_items( $request ) {
+		global $wpdb;
 		$modelClass = 'Mcs\WpModels\\' . $this->getModelName();
-		$total      = $modelClass::total();
-		$range      = $request['range'];
-		$per_page   = 10;
-		$start      = 0;
-		$end        = $start + $per_page;
+		//$total      = $modelClass::total();
+
+		$filter      = $request['filter'];
+		$whereString = '';
+		if ( $filter ) {
+			$whereString = $this->get_where_string( $filter );
+		}
+
+		$query = "SELECT count(*) FROM " . $modelClass::getTableName() . " {$whereString}";
+		$total = (int) $wpdb->get_var( $query );
+
+		$range    = $request['range'];
+		$per_page = 10;
+		$start    = 0;
+		$end      = $start + $per_page;
 		if ( $range ) {
 			$rangeData = json_decode( $range, true );
 			$start     = (int) $rangeData[0] ?? $start;
 			$end       = (int) $rangeData[1] ?? $end;
 			$per_page  = $end - $start + 1;
 		}
+		$max_pages = (int) ceil( $total / (int) $per_page );
 
-		$max_pages = ceil( $total / (int) $per_page );
+		$sort       = $request['sort'];
+		$sortString = '';
+		if ( $sort ) {
+			$sortData   = json_decode( $sort, true );
+			$order      = strtoupper( $sortData[1] ) == 'DESC' ? 'DESC' : '';
+			$sortProperty = $wpdb->_real_escape($sortData[0]);
+			$sortString = " ORDER BY `{$sortProperty}` {$order}";
+		}
 
-		global $wpdb;
 		$modelsData = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM " . $modelClass::getTableName() . " LIMIT %d, %d",
+			"SELECT * FROM " . $modelClass::getTableName() . " {$whereString} {$sortString}  LIMIT %d, %d",
 			$start, $per_page
 		), 'ARRAY_A' );
 		$models     = [];
@@ -442,6 +469,44 @@ abstract class BaseController extends WP_REST_Controller {
 		$response->header( 'Content-Range', "{$this->rest_base} {$start}-{$end}/{$total}" );
 
 		return $response;
+	}
+
+	/**
+	 * @param $filter
+	 *
+	 * @return string
+	 */
+	protected function get_where_string( $filter ) {
+		$filterData = json_decode( $filter, true );
+		if ( gettype( $filterData ) == 'array' ) {
+			global $wpdb;
+			$wheres = [];
+			foreach ( $filterData as $propertyName => $propertyValue ) {
+				switch ( gettype( $propertyValue ) ) {
+					case 'integer':
+						$wheres[] = $wpdb->prepare( "{$propertyName} = %d", $propertyValue );
+						break;
+					case 'string':
+						$wheres[] = $wpdb->prepare( "{$propertyName} LIKE %s", $propertyValue . '%' );
+						break;
+					case 'array':
+						$values = [];
+						foreach ( $propertyValue as $propertyValueValue ) {
+							$values[] = (int) $propertyValueValue;
+						}
+						if ( count( $values ) ) {
+							$values   = implode( ',', $values );
+							$wheres[] = $wpdb->_real_escape( $propertyName ) . " IN ({$values})";
+						}
+						break;
+				}
+			}
+			if ( count( $wheres ) ) {
+				return 'WHERE ' . implode( ' AND ', $wheres );
+			}
+		}
+
+		return '';
 	}
 
 	/**

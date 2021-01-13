@@ -81,7 +81,7 @@ const dataProvider = (
 		const query = {
 			filter: JSON.stringify({id: params.ids}),
 		};
-		const url = `${apiUrl}/${resource}?${stringify(query)}`;
+		const url = `${apiUrl}/${resource}&${stringify(query)}`;
 		return httpClient(url, options).then(({json}) => ({data: json}));
 	},
 

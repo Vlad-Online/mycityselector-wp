@@ -27,12 +27,12 @@ export const PublishButton = (props) => {
                 notify('Успешно');
                 unselectAll(props.resource);
             },
-            onFailure: error => notify('Произошла ошибка ' + error.toString(), 'warning'),
+            onFailure: error => notify('Error: ' + error.toString(), 'warning'),
         }
     );
     return (
         <Button
-            label={props.label ?? "Опубликовать"}
+            label={props.label ?? "Publish"}
             disabled={loading}
             onClick={updateMany}
         />
@@ -53,12 +53,12 @@ export const UnPublishButton = (props) => {
                 notify('Успешно');
                 unselectAll(props.resource);
             },
-            onFailure: error => notify('Произошла ошибка ' + error.toString(), 'warning'),
+            onFailure: error => notify('Error: ' + error.toString(), 'warning'),
         }
     );
     return (
         <Button
-            label={props.label ?? "Снять с публикации"}
+            label={props.label ?? "Unpublish"}
             disabled={loading}
             onClick={updateMany}
         />

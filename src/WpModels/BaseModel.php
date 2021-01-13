@@ -151,7 +151,16 @@ abstract class BaseModel implements ModelInterface {
 	public function fillProperties( array $data ) {
 		foreach ( $this->properties as $propertyName ) {
 			if ( isset( $data[ $propertyName ] ) ) {
-				$this->$propertyName = $data[ $propertyName ];
+				switch ( $propertyName ) {
+					case 'ordering':
+						$this->$propertyName = (int) $data[ $propertyName ];
+						break;
+					case 'published':
+						$this->$propertyName = (bool) $data[ $propertyName ];
+						break;
+					default:
+						$this->$propertyName = $data[ $propertyName ];
+				}
 			}
 		}
 	}
