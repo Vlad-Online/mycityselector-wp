@@ -9,6 +9,11 @@ use stdClass;
 use WP_Error;
 use WP_REST_Request;
 
+/**
+ * Class CountriesController
+ * @package Mcs\WpControllers
+ * @method Countries get_model( $id )
+ */
 class CountriesController extends BaseController {
 
 	protected $namespace = 'mcs/v1';
@@ -80,7 +85,7 @@ class CountriesController extends BaseController {
 				],*/
 				'default_city_id' => [
 					'description' => __( 'Default city id.' ),
-					'type'        => 'integer',
+					'type'        => [ 'integer' ],
 					'context'     => [ 'view', 'edit' ]
 				]
 			],
@@ -98,6 +103,7 @@ class CountriesController extends BaseController {
 	protected function prepare_item_for_database( $request ) {
 		$prepared_country = new stdClass();
 
+		$existing_country = null;
 		if ( isset( $request['id'] ) ) {
 			$existing_country = $this->get_model( $request['id'] );
 			if ( is_wp_error( $existing_country ) ) {
@@ -107,16 +113,13 @@ class CountriesController extends BaseController {
 			$prepared_country->ID = $existing_country->id;
 		}
 
-		$prepared_country->title     = (string) $request['title'];
-		$prepared_country->subdomain = (string) $request['subdomain'];
-		$prepared_country->published = (int) $request['published'];
-		$prepared_country->ordering  = (int) $request['ordering'];
-		$prepared_country->code      = (string) $request['code'];
-		$prepared_country->domain    = (string) $request['domain'];
-		//$prepared_country->lat             = (float) $request['lat'];
-		//$prepared_country->lng             = (float) $request['lng'];
-		$prepared_country->default_city_id = empty( $request['default_city_id'] ) ? null : (int) $request['default_city_id'];
-
+		$prepared_country->title           = (string) ( $request['title'] ?? ( $existing_country->title ?? '' ) );
+		$prepared_country->subdomain       = (string) ( $request['subdomain'] ?? ( $existing_country->subdomain ?? '' ) );
+		$prepared_country->published       = (int) ( $request['published'] ?? ( $existing_country->published ?? 0 ) );
+		$prepared_country->ordering        = (int) ( $request['ordering'] ?? ( $existing_country->ordering ?? 100 ) );
+		$prepared_country->code            = (string) ( $request['code'] ?? ( $existing_country->code ?? '' ) );
+		$prepared_country->domain          = (string) ( $request['domain'] ?? ( $existing_country->domain ?? '' ) );
+		$prepared_country->default_city_id = $request['default_city_id'] ?? ( $existing_country->default_city_id ?? null );
 
 		return $prepared_country;
 	}

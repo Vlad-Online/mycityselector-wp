@@ -6,6 +6,10 @@ namespace Mcs\WpModels;
 use Exception;
 use Mcs\Interfaces\CitiesInterface;
 
+/**
+ * Class Cities
+ * @package Mcs\WpModels
+ */
 class Cities extends BaseModel implements CitiesInterface {
 
 	protected $properties = [

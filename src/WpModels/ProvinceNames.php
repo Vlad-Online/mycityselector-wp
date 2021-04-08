@@ -4,8 +4,9 @@
 namespace Mcs\WpModels;
 
 use Exception;
+use Mcs\Interfaces\ProvinceNamesInterface;
 
-class ProvinceName extends BaseModel {
+class ProvinceNames extends BaseModel implements ProvinceNamesInterface {
 
 	protected $properties = [
 		'id',
@@ -31,13 +32,13 @@ class ProvinceName extends BaseModel {
 	 * @param int $countryId
 	 * @param string $name
 	 *
-	 * @return ProvinceName
+	 * @return ProvinceNames
 	 * @throws Exception
 	 */
 	public static function findByName($countryId, $name) {
 		global $wpdb;
 		$model     = new static();
-		$table     = ProvinceName::getTableName();
+		$table     = ProvinceNames::getTableName();
 		$provinceTable = Provinces::getTableName();
 		$modelData = $wpdb->get_row(
 			$wpdb->prepare(

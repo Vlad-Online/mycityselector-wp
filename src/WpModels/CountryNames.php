@@ -3,7 +3,9 @@
 
 namespace Mcs\WpModels;
 
-class CountryNames extends BaseModel {
+use Mcs\Interfaces\CountryNamesInterface;
+
+class CountryNames extends BaseModel implements CountryNamesInterface {
 
 	protected $properties = [
 		'id',

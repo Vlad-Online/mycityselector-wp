@@ -1,5 +1,6 @@
 <?php
 
+use Mcs\Interfaces\OptionsInterface;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -37,23 +38,73 @@ function mcs_register_options() {
 		'description' => 'Base domain of your site, f.e.: example.com',
 		'default'     => ''
 	] );
+	register_setting( 'mcs', 'mcs_default_city_id', [
+		'type'        => 'integer',
+		'description' => 'Default city id',
+		'default'     => null
+	] );
+	register_setting( 'mcs', 'mcs_seo_mode', [
+		'type'        => 'integer',
+		'description' => 'SEO mode',
+		'default'     => OptionsInterface::SEO_MODE_DISABLED
+	] );
+	register_setting( 'mcs', 'mcs_country_choose_enabled', [
+		'type'        => 'boolean',
+		'description' => 'Country choose enabled',
+		'default'     => false
+	] );
+	register_setting( 'mcs', 'mcs_province_choose_enabled', [
+		'type'        => 'boolean',
+		'description' => 'Province choose enabled',
+		'default'     => false
+	] );
+	register_setting( 'mcs', 'mcs_ask_mode', [
+		'type'        => 'integer',
+		'description' => 'Ask mode',
+		'default'     => OptionsInterface::ASK_MODE_DIALOG
+	] );
+	register_setting( 'mcs', 'mcs_redirect_next_visits', [
+		'type'        => 'boolean',
+		'description' => 'Redirect on next visits',
+		'default'     => false
+	] );
+	register_setting( 'mcs', 'mcs_log_enabled', [
+		'type'        => 'boolean',
+		'description' => 'Logging enabled',
+		'default'     => false
+	] );
+	register_setting( 'mcs', 'mcs_debug_enabled', [
+		'type'        => 'boolean',
+		'description' => 'Debug enabled',
+		'default'     => false
+	] );
 
 	// Register a new section in the "mcs" page.
-	add_settings_section(
-		'mcs_section_base',
-		'Base options',
-		null,
-		'mcs'
-	);
+//	add_settings_section(
+//		'mcs_section_base',
+//		'Base options',
+//		null,
+//		'mcs'
+//	);
 
 	// Register a new field in the "mcs_section_developers" section, inside the "mcs" page.
-	add_settings_field(
-		'mcs_base_domain', // As of WP 4.6 this value is used only internally.
-		'Base domain',
-		'mcs_base_domain_cb',
-		'mcs',
-		'mcs_section_base'
-	);
+//	add_settings_field(
+//		'mcs_base_domain', // As of WP 4.6 this value is used only internally.
+//		'Base domain',
+//		'mcs_base_domain_cb',
+//		'mcs',
+//		'mcs_section_base'
+//	);
+}
+
+function mcs_remove_admin_css( $styles ) {
+	if ( ($_REQUEST['page'] ?? '') == 'mcs' ) {
+		return array_filter( $styles, function ( $value ) {
+			return $value !== 'forms';
+		} );
+	}
+
+	return $styles;
 }
 
 function mcs_admin_enqueue_scripts() {
@@ -64,6 +115,7 @@ function mcs_admin_enqueue_scripts() {
 	] );
 	wp_enqueue_script( 'mcs-chunk-0', 'http://localhost:3000/static/js/0.chunk.js', [], null, true );
 	wp_enqueue_script( 'mcs-chunk-main', 'http://localhost:3000/static/js/main.chunk.js', [], null, true );
+	add_filter( 'print_styles_array', 'mcs_remove_admin_css' );
 }
 
 function mcs_options_page() {
@@ -75,14 +127,14 @@ function mcs_options_page() {
 		'',
 		20
 	);
-	add_submenu_page(
+	/*add_submenu_page(
 		plugin_dir_path( __FILE__ ),
 		'MyCitySelector Plugin Options',
 		'MyCitySelector Plugin Options',
 		'manage_options',
 		plugin_dir_path( __FILE__ ) . '/options',
 		'mcs_options_page_html'
-	);
+	);*/
 }
 
 function mcs_start_ob() {
@@ -114,13 +166,13 @@ function mcs_base_domain_cb() {
 
 function mcs_main_html() {
 	wp_enqueue_style( 'mcs-styles', plugin_dir_url( '' ) . 'mcs/admin/src/App.css' );
-/*	wp_add_inline_style( 'admin-bar', "
-	#root {
-    	all: initial;
-		* {
-			all: unset;
-		}
-}" );*/
+	/*	wp_add_inline_style( 'admin-bar', "
+		#root {
+			all: initial;
+			* {
+				all: unset;
+			}
+	}" );*/
 	?>
 	<div class="wrap">
 		<h1><?= esc_html( get_admin_page_title() ); ?></h1>
@@ -131,11 +183,6 @@ function mcs_main_html() {
 }
 
 function mcs_options_page_html() {
-	// check user capabilities
-	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-
 	// add error/update messages
 
 	// check if the user have submitted the settings

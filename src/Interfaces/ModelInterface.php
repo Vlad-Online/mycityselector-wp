@@ -18,7 +18,15 @@ interface ModelInterface {
 	 *
 	 * @return ModelInterface
 	 */
-	public static function findByPropertyValue( $property,  $value): ModelInterface;
+	public static function findFirstByPropertyValue( $property,  $value): ModelInterface;
+
+	/**
+	 * @param $property
+	 * @param $value
+	 *
+	 * @return ModelInterface[]
+	 */
+	public static function findByPropertyValue( $property,  $value): array;
 
 	/**
 	 * @return ModelInterface[]
@@ -31,7 +39,7 @@ interface ModelInterface {
 
 	public function update( $data = [] ): ModelInterface;
 
-	public function delete( $force = false ): bool;
+	public function delete( ): bool;
 
 	public static function getTableName(): string;
 

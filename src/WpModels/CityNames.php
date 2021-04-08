@@ -4,8 +4,9 @@
 namespace Mcs\WpModels;
 
 use Exception;
+use Mcs\Interfaces\CityNamesInterface;
 
-class CityNames extends BaseModel {
+class CityNames extends BaseModel implements CityNamesInterface {
 
 	protected $properties = [
 		'id',

@@ -9,20 +9,21 @@ use WP_Error;
 
 abstract class BaseModel implements ModelInterface {
 
-	protected $properties = [
-	];
-
+	/**
+	 * @var int
+	 */
 	public $id;
 
 	/**
 	 * @param int $id
 	 *
-	 * @return ModelInterface|mixed
+	 * @return static|WP_Error
 	 */
 	public static function findById( int $id ) {
 		global $wpdb;
-		$model     = new static();
-		$table     = $model->getTableName();
+		$model = new static();
+		$table = $model->getTableName();
+		/** @noinspection SqlResolve */
 		$modelData = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$table} WHERE id = %s LIMIT 1",
@@ -31,7 +32,6 @@ abstract class BaseModel implements ModelInterface {
 		);
 		if ( ! $modelData ) {
 			return new WP_Error( 404, 'Entry not found.' );
-			//throw new Exception( 'Not found' );
 		}
 		$model->fillProperties( $modelData );
 
@@ -45,7 +45,7 @@ abstract class BaseModel implements ModelInterface {
 	 * @return static
 	 * @throws Exception
 	 */
-	public static function findByPropertyValue( $property, $value ): ModelInterface {
+	public static function findFirstByPropertyValue( $property, $value ): ModelInterface {
 		global $wpdb;
 		$model     = new static();
 		$table     = $model->getTableName();
@@ -64,7 +64,34 @@ abstract class BaseModel implements ModelInterface {
 	}
 
 	/**
-	 * @return self[]
+	 * @param $property
+	 * @param $value
+	 *
+	 * @return static[]
+	 */
+	public static function findByPropertyValue( $property, $value ): array {
+		global $wpdb;
+		$table      = static::getTableName();
+		$modelsData = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE {$property} = %s LIMIT 1",
+				$value
+			), 'ARRAY_A'
+		);
+		$result     = [];
+		if ( ! empty( $modelsData ) ) {
+			foreach ( $modelsData as $modelData ) {
+				$model = new static();
+				$model->fillProperties( $modelData );
+				$result[] = $model;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @return static[]
 	 */
 	public static function all(): array {
 		global $wpdb;
@@ -134,12 +161,10 @@ abstract class BaseModel implements ModelInterface {
 	}
 
 	/**
-	 * @param false $force
-	 *
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function delete( $force = false ): bool {
+	public function delete(): bool {
 		global $wpdb;
 		if ( ! $wpdb->delete( $this->getTableName(), [ 'id' => (int) $this->id ], [ '%d' ] ) ) {
 			throw new Exception( 'Error delete model id: ' . $this->id );
@@ -149,7 +174,7 @@ abstract class BaseModel implements ModelInterface {
 	}
 
 	public function fillProperties( array $data ) {
-		foreach ( $this->properties as $propertyName ) {
+		foreach ( $this->getProperties() as $propertyName ) {
 			if ( isset( $data[ $propertyName ] ) ) {
 				switch ( $propertyName ) {
 					case 'ordering':

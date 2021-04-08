@@ -1,27 +1,31 @@
 <?php
 
+use Mcs\WpModels\Fields;
+use Mcs\WpModels\FieldValues;
 
-use Mcs\WpModels\Countries;
-
-class testWpCountriesController extends WP_Test_REST_Controller_Testcase {
+class testWpFieldValuesController extends WP_Test_REST_Controller_Testcase {
 
 	/**
-	 * @var Countries
+	 * @var Fields
 	 */
-	protected static $country;
+	protected $field;
 
 	/**
-	 * @var WP_User
+	 * @var FieldValues
+	 */
+	protected $fieldValue;
+	/**
+	 * @var WP_User|int
 	 */
 	protected static $user;
 
+	/**
+	 * @param $factory
+	 *
+	 * @throws Exception
+	 */
 	public static function wpSetUpBeforeClass( $factory ) {
 		activate_mcs_plugin();
-		self::$country = Countries::create( [
-			'subdomain' => 'test',
-			'code'      => 'ru',
-			'domain'    => 'ru'
-		] );
 		self::$user = $factory->user->create(
 			array(
 				'role' => 'administrator',
@@ -29,166 +33,195 @@ class testWpCountriesController extends WP_Test_REST_Controller_Testcase {
 		);
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public static function wpTearDownAfterClass() {
-		self::$country->delete();
 		self::delete_user( self::$user );
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function setUp() {
+		$this->field      = Fields::create( [
+			'name'      => 'test',
+			'published' => true
+		] );
+		$this->fieldValue = FieldValues::create( [
+			'field_id'  => $this->field->id,
+			'value'     => 'test',
+			'default'   => false,
+			'is_ignore' => false
+		] );
+		parent::setUp();
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function tearDown() {
+		foreach ( $this->field->getFieldValues() as $fieldValue ) {
+			$fieldValue->delete();
+		}
+		$this->field->delete();
+		parent::tearDown();
 	}
 
 
 	public function test_register_routes() {
 		$routes = rest_get_server()->get_routes();
-		$this->assertArrayHasKey( '/mcs/v1/Countries', $routes );
-		$this->assertArrayHasKey( '/mcs/v1/Countries/(?P<id>[\d]+)', $routes );
+		$this->assertArrayHasKey( '/mcs/v1/FieldValues', $routes );
+		$this->assertArrayHasKey( '/mcs/v1/FieldValues/(?P<id>[\d]+)', $routes );
 	}
 
 	public function test_context_param() {
-		// Collection.
-		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/Countries' );
+		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/FieldValues' );
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
 		$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
 		$this->assertEqualSets( array( 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
 
-		// Single.
-		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/Countries/' . self::$country->id );
+
+		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/FieldValues/' . $this->field->id );
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
 		$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
 		$this->assertEqualSets( array( 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public function test_get_items() {
 		wp_set_current_user( self::$user );
 
-		$request = new WP_REST_Request( 'GET', '/mcs/v1/Countries' );
+		$request = new WP_REST_Request( 'GET', '/mcs/v1/FieldValues' );
 		$request->set_param( 'context', 'view' );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( 200, $response->get_status() );
 
-		$all_data    = $response->get_data();
-		$data        = $all_data[0];
-		$countryData = Countries::findById( $data['id'] );
-		//$userdata = get_userdata( $data['id'] );
-		$this->check_model_data( $countryData, $data );
+		$all_data  = $response->get_data();
+		$data      = $all_data[0];
+		$modelData = FieldValues::findById( $data['id'] );
+		$this->check_model_data( $modelData, $data );
 	}
 
 	public function test_get_item() {
-		$country_id = self::$country->id;
-
 		wp_set_current_user( self::$user );
 
-		$request  = new WP_REST_Request( 'GET', sprintf( '/mcs/v1/Countries/%d', $country_id ) );
+		$request  = new WP_REST_Request( 'GET', sprintf( '/mcs/v1/FieldValues/%d', $this->fieldValue->id ) );
 		$response = rest_get_server()->dispatch( $request );
-		$this->check_get_country_response( $response, 'embed' );
+		$this->check_get_field_response( $response );
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public function test_create_item() {
 		wp_set_current_user( self::$user );
 
-		$request = new WP_REST_Request( 'POST', '/mcs/v1/Countries' );
+		$request = new WP_REST_Request( 'POST', '/mcs/v1/FieldValues' );
 		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
 		$params = $this->set_model_data();
 		$request->set_body_params( $params );
 		$response = rest_get_server()->dispatch( $request );
 		$this->check_create_model_response( $response );
+		FieldValues::findById( $response->get_data()['id'] )->delete();
 	}
 
 	public function test_update_item() {
 		wp_set_current_user( self::$user );
-
-		$request = new WP_REST_Request( 'PUT', sprintf( '/mcs/v1/Countries/%d', self::$country->id ) );
+		$request = new WP_REST_Request( 'PUT', sprintf( '/mcs/v1/FieldValues/%d', $this->fieldValue->id ) );
 		$request->add_header( 'content-type', 'application/x-www-form-urlencoded' );
 		$params = $this->set_model_data();
 		$request->set_body_params( $params );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->check_update_model_response( $response );
-		$model = Countries::findById( self::$country->id );
-		$this->check_model_data( $model, $params );
+		$this->fieldValue = FieldValues::findById( $this->fieldValue->id );
+		$this->check_model_data( $this->fieldValue, $params );
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	public function test_delete_item() {
 		wp_set_current_user( self::$user );
-
-		$request  = new WP_REST_Request( 'DELETE', sprintf( '/mcs/v1/Countries/%d', self::$country->id ) );
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/mcs/v1/FieldValues/%d', $this->fieldValue->id ) );
 		$response = rest_get_server()->dispatch( $request );
-
 		$this->assertSame( 200, $response->get_status() );
-
-		$model = Countries::findById( self::$country->id );
+		$model = FieldValues::findById( $this->fieldValue->id );
 		$this->assertInstanceOf( 'WP_Error', $model );
 		$this->assertEquals( 404, $model->get_error_code() );
+		$this->fieldValue = FieldValues::create( [
+			'field_id'  => $this->field->id,
+			'value'     => 'test',
+			'default'   => false,
+			'is_ignore' => false
+		] );
 	}
 
 	public function test_prepare_item() {
 		wp_set_current_user( self::$user );
-
-		$request = new WP_REST_Request( 'GET', sprintf( '/mcs/v1/Countries/%d', self::$country->id ) );
+		$request = new WP_REST_Request( 'GET', sprintf( '/mcs/v1/FieldValues/%d', $this->fieldValue->id ) );
 		$request->set_query_params( array( 'context' => 'edit' ) );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->check_get_model_response( $response );
 	}
 
-
 	public function test_get_item_schema() {
-		$request    = new WP_REST_Request( 'OPTIONS', '/mcs/v1/Countries' );
+		$request    = new WP_REST_Request( 'OPTIONS', '/mcs/v1/FieldValues' );
 		$response   = rest_get_server()->dispatch( $request );
 		$data       = $response->get_data();
 		$properties = $data['schema']['properties'];
-		$this->assertSame( 8, count( $properties ) );
+		$this->assertSame( 5, count( $properties ) );
 		$this->assertArrayHasKey( 'id', $properties );
-		$this->assertArrayHasKey( 'title', $properties );
-		$this->assertArrayHasKey( 'subdomain', $properties );
-		$this->assertArrayHasKey( 'published', $properties );
-		$this->assertArrayHasKey( 'ordering', $properties );
-		$this->assertArrayHasKey( 'code', $properties );
-		$this->assertArrayHasKey( 'domain', $properties );
-		//$this->assertArrayHasKey( 'lat', $properties );
-		//$this->assertArrayHasKey( 'lng', $properties );
-		$this->assertArrayHasKey( 'default_city_id', $properties );
+		$this->assertArrayHasKey( 'field_id', $properties );
+		$this->assertArrayHasKey( 'value', $properties );
+		$this->assertArrayHasKey( 'default', $properties );
+		$this->assertArrayHasKey( 'is_ignore', $properties );
 	}
 
-	protected function check_get_country_response( $response, $context = 'view' ) {
+	/**
+	 * @param $response
+	 *
+	 */
+	protected function check_get_field_response( $response ) {
 		$this->assertEquals( 200, $response->get_status() );
-
-		$data        = $response->get_data();
-		$countryData = Countries::findById( $data['id'] );
-		$this->check_model_data( $countryData, $data );
+		$data     = $response->get_data();
+		$cityData = FieldValues::findById( $data['id'] );
+		$this->check_model_data( $cityData, $data );
 	}
 
-	protected function check_model_data( Countries $country, $data ) {
+	protected function check_model_data( FieldValues $model, $data ) {
 		if ( isset( $data['id'] ) ) {
-			$this->assertEquals( $country->id, $data['id'] );
+			$this->assertEquals( $model->id, $data['id'] );
 		}
-		$this->assertEquals( $country->title, $data['title'] );
-		$this->assertEquals( $country->subdomain, $data['subdomain'] );
-		$this->assertEquals( $country->published, $data['published'] );
-		$this->assertEquals( $country->ordering, $data['ordering'] );
-		$this->assertEquals( $country->code, $data['code'] );
-		$this->assertEquals( $country->domain, $data['domain'] );
-		//$this->assertEquals( $country->lat, $data['lat'] );
-		//$this->assertEquals( $country->lng, $data['lng'] );
-		$this->assertEquals( $country->default_city_id, $data['default_city_id'] );
+		$this->assertEquals( $model->field_id, $data['field_id'] );
+		$this->assertEquals( $model->value, $data['value'] );
+		$this->assertEquals( $model->default, $data['default'] );
+		$this->assertEquals( $model->is_ignore, $data['is_ignore'] );
 	}
 
 	protected function set_model_data( $args = array() ) {
-		$defaults = array(
-			'title'           => 'test-country',
-			'subdomain'       => 'test-country-subdomain',
-			'published'       => 1,
-			'ordering'        => 10,
-			'code'            => 'ru',
-			'domain'          => 'test-country-domain',
-			//'lat'             => 30.000000,
-			//'lng'             => 50.000000,
-			'default_city_id' => null
-		);
+		$defaults = [
+			'field_id'  => $this->field->id,
+			'value'     => 'test test test',
+			'default'   => true,
+			'is_ignore' => true
+		];
 
 		return wp_parse_args( $args, $defaults );
 	}
 
+	/**
+	 * @param WP_REST_Response $response
+	 *
+	 * @throws Exception
+	 */
 	protected function check_create_model_response( WP_REST_Response $response ) {
 		$this->assertNotWPError( $response );
 		$response = rest_ensure_response( $response );
@@ -199,10 +232,14 @@ class testWpCountriesController extends WP_Test_REST_Controller_Testcase {
 
 		$data = $response->get_data();
 
-		$model = Countries::findById( $data['id'] );
+		$model = FieldValues::findById( $data['id'] );
 		$this->check_model_data( $model, $data );
 	}
 
+	/**
+	 * @param WP_REST_Response $response
+	 *
+	 */
 	protected function check_update_model_response( WP_REST_Response $response ) {
 		$this->assertNotWPError( $response );
 		$response = rest_ensure_response( $response );
@@ -212,17 +249,21 @@ class testWpCountriesController extends WP_Test_REST_Controller_Testcase {
 		$this->assertArrayNotHasKey( 'Location', $headers );
 
 		$data  = $response->get_data();
-		$model = Countries::findById( $data['id'] );
+		$model = FieldValues::findById( $data['id'] );
 		$this->check_model_data( $model, $data );
 	}
 
+	/**
+	 * @param WP_REST_Response $response
+	 *
+	 */
 	protected function check_get_model_response( WP_REST_Response $response ) {
 		$this->assertNotWPError( $response );
 		$response = rest_ensure_response( $response );
 		$this->assertEquals( 200, $response->get_status() );
 
 		$data  = $response->get_data();
-		$model = Countries::findById( $data['id'] );
+		$model = FieldValues::findById( $data['id'] );
 		$this->check_model_data( $model, $data );
 	}
 }

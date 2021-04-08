@@ -8,6 +8,11 @@
     "phpunit/phpunit": "^7"
   },
   "autoload": {
-    "psr-4": {"Mcs\\": "src/"}
-  }
+    "psr-4": {
+      "Mcs\\": "src/"
+    }
+  },
+  "name": "smolensky/my-city-selector",
+  "description": "Geo targeting component for WordPress",
+  "license": "GPL-2.0-or-later"
 }

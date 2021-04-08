@@ -3,7 +3,6 @@
 
 namespace Mcs\WpControllers;
 
-
 use Exception;
 use Mcs\Interfaces\ModelInterface;
 use WP_Error;
@@ -328,7 +327,9 @@ abstract class BaseController extends WP_REST_Controller {
 
 	public function update_item_permissions_check( $request ) {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			return new WP_Error( 'rest_forbidden', esc_html__( 'You cannot update the countries resource.' ), array( 'status' => $this->authorization_status_code() ) );
+			$modelName = $this->getModelName();
+
+			return new WP_Error( 'rest_forbidden', esc_html__( "You cannot update the {$modelName} resource." ), array( 'status' => $this->authorization_status_code() ) );
 		}
 
 		return true;
@@ -350,7 +351,6 @@ abstract class BaseController extends WP_REST_Controller {
 			return $model;
 		}
 
-		$force     = (bool) $request['force'];
 		$modelName = $this->getModelName();
 
 		if ( ! $this->check_delete_permission() ) {
@@ -371,7 +371,7 @@ abstract class BaseController extends WP_REST_Controller {
 		);
 
 		try {
-			$model->delete( true );
+			$model->delete();
 		} catch ( Exception $exception ) {
 			return new WP_Error(
 				'rest_cannot_delete',
@@ -438,10 +438,10 @@ abstract class BaseController extends WP_REST_Controller {
 		$sort       = $request['sort'];
 		$sortString = '';
 		if ( $sort ) {
-			$sortData   = json_decode( $sort, true );
-			$order      = strtoupper( $sortData[1] ) == 'DESC' ? 'DESC' : '';
-			$sortProperty = $wpdb->_real_escape($sortData[0]);
-			$sortString = " ORDER BY `{$sortProperty}` {$order}";
+			$sortData     = json_decode( $sort, true );
+			$order        = strtoupper( $sortData[1] ) == 'DESC' ? 'DESC' : '';
+			$sortProperty = $wpdb->_real_escape( $sortData[0] );
+			$sortString   = " ORDER BY `{$sortProperty}` {$order}";
 		}
 
 		$modelsData = $wpdb->get_results( $wpdb->prepare(
@@ -487,7 +487,7 @@ abstract class BaseController extends WP_REST_Controller {
 						$wheres[] = $wpdb->prepare( "{$propertyName} = %d", $propertyValue );
 						break;
 					case 'string':
-						$wheres[] = $wpdb->prepare( "{$propertyName} LIKE %s", $propertyValue . '%' );
+						$wheres[] = $wpdb->prepare( "{$propertyName} COLLATE UTF8_GENERAL_CI LIKE %s", $propertyValue . '%' );
 						break;
 					case 'array':
 						$values = [];

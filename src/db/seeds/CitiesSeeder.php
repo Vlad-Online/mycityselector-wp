@@ -81,7 +81,7 @@ class CitiesSeeder extends AbstractSeed {
 
 		try {
 			//$countryName = CountryNames::findByPropertyValue( 'name', $name );
-			$country = Countries::findByPropertyValue( 'title', $name );
+			$country = Countries::findFirstByPropertyValue( 'title', $name );
 		} catch ( Exception $exception ) {
 			$country = Countries::create( [
 				'title'     => $name,

@@ -3,7 +3,6 @@
 
 namespace Mcs\Interfaces;
 
-
 use Exception;
 
 interface ProvincesInterface {

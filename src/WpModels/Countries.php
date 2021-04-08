@@ -35,22 +35,15 @@ class Countries extends BaseModel implements CountriesInterface {
 		return $this->properties;
 	}
 
-	public function delete( $force = false ): bool {
-		$provincesCount = $this->countProvinces();
-		$citiesCount    = $this->countCities();
-		if ( $provincesCount > 0 || $citiesCount > 0 ) {
-			if ( ! $force ) {
-				return false;
-			}
-			foreach ( $this->getCities() as $city ) {
-				$city->delete();
-			}
-			foreach ( $this->getProvinces() as $province ) {
-				$province->delete();
-			}
+	public function delete(): bool {
+		foreach ( $this->getCities() as $city ) {
+			$city->delete();
+		}
+		foreach ( $this->getProvinces() as $province ) {
+			$province->delete();
 		}
 
-		return parent::delete( $force );
+		return parent::delete();
 	}
 
 	public function countProvinces() {
@@ -78,7 +71,7 @@ class Countries extends BaseModel implements CountriesInterface {
 		$tableName  = Provinces::getTableName();
 		$modelsData = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$tableName} WHERE country_id = %d LIMIT 1",
+				"SELECT * FROM {$tableName} WHERE country_id = %d",
 				$this->id
 			), 'ARRAY_A'
 		);
@@ -100,7 +93,7 @@ class Countries extends BaseModel implements CountriesInterface {
 		$tableName  = Cities::getTableName();
 		$modelsData = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$tableName} WHERE country_id = %d LIMIT 1",
+				"SELECT * FROM {$tableName} WHERE country_id = %d",
 				$this->id
 			), 'ARRAY_A'
 		);

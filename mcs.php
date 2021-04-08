@@ -27,6 +27,12 @@ require_once __DIR__ . '/hooks.php';
 require_once __DIR__.'/src/WpControllers/CountriesController.php';
 require_once __DIR__.'/src/WpControllers/ProvincesController.php';
 require_once __DIR__.'/src/WpControllers/CitiesController.php';
+require_once __DIR__.'/src/WpControllers/FieldsController.php';
+require_once __DIR__.'/src/WpControllers/FieldValuesController.php';
+require_once __DIR__.'/src/WpControllers/CountryFieldValuesController.php';
+require_once __DIR__.'/src/WpControllers/ProvinceFieldValuesController.php';
+require_once __DIR__.'/src/WpControllers/CityFieldValuesController.php';
+require_once __DIR__.'/src/WpControllers/OptionsController.php';
 
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );
 register_deactivation_hook( __FILE__, 'deactivate_mcs_plugin' );
