@@ -11,6 +11,7 @@ ReactDOM.render(
 				title: window.mcs?.options?.title ?? "Select your location",
 				mode: window.mcs?.options?.mode ?? 0,
 			}}
+			data={window.mcs?.data ?? {}}
 		/>
 	</React.StrictMode>,
 	document.getElementById("mcs-widget")

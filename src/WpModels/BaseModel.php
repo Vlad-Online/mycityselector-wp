@@ -74,7 +74,7 @@ abstract class BaseModel implements ModelInterface {
 		$table      = static::getTableName();
 		$modelsData = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE {$property} = %s LIMIT 1",
+				"SELECT * FROM {$table} WHERE {$property} = %s",
 				$value
 			), 'ARRAY_A'
 		);
@@ -185,7 +185,12 @@ abstract class BaseModel implements ModelInterface {
 						$this->$propertyName = (bool) $data[ $propertyName ];
 						break;
 					default:
-						$this->$propertyName = $data[ $propertyName ];
+						if ( substr( $propertyName, - 3 ) == '_id' ) {
+							$this->$propertyName = (int) $data[ $propertyName ];
+						} else {
+							$this->$propertyName = $data[ $propertyName ];
+						}
+
 				}
 			}
 		}

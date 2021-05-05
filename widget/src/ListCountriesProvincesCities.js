@@ -1,30 +1,79 @@
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Divider from "@material-ui/core/Divider";
-import InboxIcon from "@material-ui/icons/Inbox";
-import DraftsIcon from "@material-ui/icons/Drafts";
+import React, { useState } from "react";
+import _ from "lodash";
+import McsList from "./McsList";
+import { Grid } from "@material-ui/core";
 
-export const ListCountriesProvincesCities = ({ data }) => {
+export const ListCountriesProvincesCities = ({ data, onSelectCity }) => {
+	const [selectedCountryIndex, setSelectedCountryIndex] = useState(null);
+	const [selectedProvinceIndex, setSelectedProvinceIndex] = useState(null);
+	const [selectedCityIndex, setSelectedCityIndex] = useState(null);
+	const countries = _.sortBy(_.get(data, "countries", {}), ["title"]);
+	const selectedCountryId = _.get(countries[selectedCountryIndex], "id");
+
+	const provinces = _.sortBy(
+		_.filter(_.get(data, "provinces", {}), [
+			"country_id",
+			selectedCountryId,
+		]),
+		["title"]
+	);
+	const selectedProvinceId = _.get(provinces[selectedProvinceIndex], "id");
+	const cities = _.sortBy(
+		_.filter(_.get(data, "cities", {}), (city) => {
+			if (selectedProvinceId) {
+				return _.get(city, "province_id") === selectedProvinceId;
+			} else if (selectedCountryId) {
+				return _.get(city, "country_id") === selectedCountryId;
+			}
+			return false;
+		}),
+		["title"]
+	);
+
+	const handleCountryClick = (index) => {
+		if (selectedCountryIndex !== index) {
+			setSelectedCountryIndex(index);
+			setSelectedProvinceIndex(null);
+			setSelectedCityIndex(null);
+		}
+	};
+	const handleProvinceClick = (index) => {
+		if (selectedProvinceIndex !== index) {
+			setSelectedProvinceIndex(index);
+			setSelectedCityIndex(null);
+		}
+	};
+	const handleCityClick = (index) => {
+		setSelectedCityIndex(index);
+		onSelectCity();
+	};
+
 	return (
-		<List component="nav">
-			<ListItem
-				button
-				selected={selectedIndex === 2}
-				onClick={(event) => handleListItemClick(event, 2)}
-			>
-				<ListItemText primary="Trash" />
-			</ListItem>
-			<ListItem
-				button
-				selected={selectedIndex === 3}
-				onClick={(event) => handleListItemClick(event, 3)}
-			>
-				<ListItemText primary="Spam" />
-			</ListItem>
-		</List>
+		<Grid container>
+			<Grid item xs={12} sm={4}>
+				<McsList
+					title="Country"
+					handleItemClick={handleCountryClick}
+					items={countries}
+					selectedIndex={selectedCountryIndex}
+				/>
+			</Grid>
+			<Grid item xs={12} sm={4}>
+				<McsList
+					title="State / Province"
+					handleItemClick={handleProvinceClick}
+					items={provinces}
+					selectedIndex={selectedProvinceIndex}
+				/>
+			</Grid>
+			<Grid item xs={12} sm={4}>
+				<McsList
+					title="City"
+					handleItemClick={handleCityClick}
+					items={cities}
+					selectedIndex={selectedCityIndex}
+				/>
+			</Grid>
+		</Grid>
 	);
 };

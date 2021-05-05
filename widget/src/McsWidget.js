@@ -1,18 +1,25 @@
 import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import {
 	Box,
+	createMuiTheme,
 	IconButton,
 	Link,
 	Typography,
 	withStyles,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
+import { ListCountriesProvincesCities } from "./ListCountriesProvincesCities";
+import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
+import { ListCities } from "./ListCities";
+
+const theme = createMuiTheme({
+	typography: {
+		htmlFontSize: 10,
+	},
+});
 
 const styles = (theme) => ({
 	root: {
@@ -35,7 +42,10 @@ const DialogTitle = withStyles(styles)(
 				className={classes.root}
 				{...other}
 			>
-				<Typography variant="h6">{children}</Typography>
+				<Box mr={6}>
+					<Typography variant="h6">{children}</Typography>
+				</Box>
+
 				{onClose ? (
 					<IconButton
 						aria-label="close"
@@ -50,7 +60,16 @@ const DialogTitle = withStyles(styles)(
 	}
 );
 
-export const McsWidget = ({ options }) => {
+const useStyles = makeStyles(() => ({
+	root: {
+		overflowY: "visible",
+	},
+	paper: {
+		overflowY: "visible",
+	},
+}));
+
+export const McsWidget = ({ options, data }) => {
 	const [open, setOpen] = useState(false);
 
 	const handleLinkClick = (e) => {
@@ -62,8 +81,10 @@ export const McsWidget = ({ options }) => {
 		setOpen(false);
 	};
 
+	const handleCitySelect = () => {};
+	const classes = useStyles();
 	return (
-		<>
+		<ThemeProvider theme={theme}>
 			<Box m={2}>
 				<Link href="#" onClick={handleLinkClick}>
 					Choose location
@@ -74,35 +95,30 @@ export const McsWidget = ({ options }) => {
 				onClose={handleClose}
 				scroll="paper"
 				aria-labelledby="scroll-dialog-title"
-				aria-describedby="scroll-dialog-description"
+				classes={{
+					paper: classes.paper,
+				}}
+				fullWidth
+				maxWidth={options?.mode === 0 ? "sm" : "md"}
 			>
 				<DialogTitle id="scroll-dialog-title" onClose={handleClose}>
 					{options?.title ?? ""}
 				</DialogTitle>
-				<DialogContent dividers>
-					<DialogContentText
-						id="scroll-dialog-description"
-						tabIndex={-1}
-					>
-						{[...new Array(50)]
-							.map(
-								() => `Cras mattis consectetur purus sit amet fermentum.
-Cras justo odio, dapibus ac facilisis in, egestas eget quam.
-Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-Praesent commodo cursus magna, vel scelerisque nisl consectetur et.`
-							)
-							.join("\n")}
-					</DialogContentText>
+				<DialogContent className={classes.root}>
+					{options?.mode === 0 && (
+						<ListCities
+							data={data}
+							onSelectCity={handleCitySelect}
+						/>
+					)}
+					{options?.mode === 2 && (
+						<ListCountriesProvincesCities
+							data={data}
+							onSelectCity={handleCitySelect}
+						/>
+					)}
 				</DialogContent>
-				<DialogActions>
-					<Button onClick={handleClose} color="primary">
-						Cancel
-					</Button>
-					<Button onClick={handleClose} color="primary">
-						Subscribe
-					</Button>
-				</DialogActions>
 			</Dialog>
-		</>
+		</ThemeProvider>
 	);
 };
