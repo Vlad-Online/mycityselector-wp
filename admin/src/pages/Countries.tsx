@@ -29,7 +29,6 @@ const CountriesBulkActionButtons: FC<BulkDeleteButtonProps> = (props) => (
 	<Fragment>
 		<PublishButton {...props} />
 		<UnPublishButton {...props} />
-
 		<BulkDeleteButton
 			{...props}
 			undoable={false}

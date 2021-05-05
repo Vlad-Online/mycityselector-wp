@@ -9,3 +9,4 @@ node_modules/
 *.zip
 vendor
 bin/install.sh
+widget/node_modules

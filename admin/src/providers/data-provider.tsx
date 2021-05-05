@@ -101,7 +101,7 @@ const dataProvider = (
 				[params.target]: params.id,
 			}),
 		};
-		const url = `${apiUrl}/${resource}?${stringify(query)}`;
+		const url = `${apiUrl}/${resource}&${stringify(query)}`;
 		const headers = getHeaders();
 		if (countHeader === "Content-Range") {
 			headers.append("Range", `${resource}=${rangeStart}-${rangeEnd}`);

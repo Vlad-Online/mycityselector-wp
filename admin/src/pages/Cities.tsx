@@ -41,7 +41,6 @@ export const CitiesList: FC<ListProps> = (props) => {
 
 const ProvinceReferenceInput: FC = (props) => {
 	const { values } = useFormState();
-	//console.log("values.country_id", values.country_id);
 	const filterToQuery = useCallback(
 		(text) => ({
 			title: text,
@@ -87,7 +86,6 @@ export const CitiesCreate: FC<CreateProps> = (props) => {
 };
 
 export const CitiesEdit: FC = (props) => {
-	const { values } = useFormState();
 	return (
 		<Edit {...props}>
 			<SimpleForm>

@@ -45,38 +45,25 @@ class FieldValues extends BaseModel implements FieldValuesInterface {
 		];
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function getId() {
 		return $this->id;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	public function getFieldId() {
-		return $this->field_id;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
 	public function getValue() {
 		return $this->value;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function isDefault() {
 		return $this->default;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function isIgnore() {
 		return $this->is_ignore;
+	}
+
+	public function fillProperties( array $data ) {
+		parent::fillProperties( $data );
+		$this->default   = (bool) $data['default'];
+		$this->is_ignore = (bool) $data['is_ignore'];
 	}
 }

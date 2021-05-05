@@ -177,6 +177,7 @@ abstract class BaseModel implements ModelInterface {
 		foreach ( $this->getProperties() as $propertyName ) {
 			if ( isset( $data[ $propertyName ] ) ) {
 				switch ( $propertyName ) {
+					case 'id':
 					case 'ordering':
 						$this->$propertyName = (int) $data[ $propertyName ];
 						break;

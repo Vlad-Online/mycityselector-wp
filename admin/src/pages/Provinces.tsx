@@ -34,7 +34,12 @@ const ProvincesFilter: FC = (props) => (
 
 export const ProvincesList: FC = (props) => {
 	return (
-		<List {...props} exporter={false} filters={<ProvincesFilter />}>
+		<List
+			{...props}
+			exporter={false}
+			filters={<ProvincesFilter />}
+			title="States / Provinces"
+		>
 			<Datagrid>
 				<TextField source="id" label="ID" />
 				<ReferenceField source="country_id" reference="Countries">

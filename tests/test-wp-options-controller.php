@@ -53,8 +53,11 @@ class testWpOptionsController extends WP_Test_REST_Controller_Testcase {
 		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/Options' );
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
-		$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
-		$this->assertEqualSets( array( 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+		$this->assertArrayHasKey('filter', $data["endpoints"][0]["args"]);
+		$this->assertArrayHasKey('range', $data["endpoints"][0]["args"]);
+		$this->assertArrayHasKey('sort', $data["endpoints"][0]["args"]);
+		//$this->assertEquals( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		//$this->assertEqualSets( array( 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
 
 		// Single.
 		$request  = new WP_REST_Request( 'OPTIONS', '/mcs/v1/Options/0' );

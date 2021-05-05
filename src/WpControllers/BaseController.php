@@ -207,65 +207,19 @@ abstract class BaseController extends WP_REST_Controller {
 	}
 
 	public function get_collection_params() {
-		$query_params = parent::get_collection_params();
-
-		$query_params['context']['default'] = 'view';
-
-		$query_params['exclude'] = array(
-			'description' => __( 'Ensure result set excludes specific IDs.' ),
-			'type'        => 'array',
-			'items'       => array(
-				'type' => 'integer',
-			),
-			'default'     => array(),
-		);
-
-		$query_params['include'] = array(
-			'description' => __( 'Limit result set to specific IDs.' ),
-			'type'        => 'array',
-			'items'       => array(
-				'type' => 'integer',
-			),
-			'default'     => array(),
-		);
-
-		$query_params['offset'] = array(
-			'description' => __( 'Offset the result set by a specific number of items.' ),
-			'type'        => 'integer',
-		);
-
-		$query_params['range'] = array(
+		//$query_params['context']['default'] = 'view';
+		$query_params['range']  = array(
 			'description' => __( 'Range the result set by a specific number of items.' ),
-			'type'        => 'string',
+			'type'        => 'json',
 		);
-
-		$query_params['order'] = array(
-			'default'     => 'asc',
-			'description' => __( 'Order sort attribute ascending or descending.' ),
-			'enum'        => array( 'asc', 'desc' ),
-			'type'        => 'string',
+		$query_params['sort']   = array(
+			'description' => __( 'Order sort attribute ascending or descending. ["id", "ASC"]' ),
+			'type'        => 'json',
 		);
-
-		$query_params['orderby'] = array(
-			'default'     => 'name',
-			'description' => __( 'Sort collection by object attribute.' ),
-			'enum'        => array(
-				'id',
-				'include',
-				'name',
-				'registered_date',
-				'slug',
-				'include_slugs',
-				'email',
-				'url',
-			),
-			'type'        => 'string',
-		);
-
 		$query_params['filter'] = array(
 			'default'     => null,
 			'description' => __( 'Filter collection by property.' ),
-			'type'        => 'string',
+			'type'        => 'json',
 		);
 
 		return $query_params;
@@ -285,6 +239,7 @@ abstract class BaseController extends WP_REST_Controller {
 					$data[ $property ] = (int) $item->$property;
 					break;
 				case 'published':
+				case 'default':
 					$data[ $property ] = (bool) $item->$property;
 					break;
 				default:
@@ -412,7 +367,6 @@ abstract class BaseController extends WP_REST_Controller {
 	public function get_items( $request ) {
 		global $wpdb;
 		$modelClass = 'Mcs\WpModels\\' . $this->getModelName();
-		//$total      = $modelClass::total();
 
 		$filter      = $request['filter'];
 		$whereString = '';
@@ -497,6 +451,13 @@ abstract class BaseController extends WP_REST_Controller {
 						if ( count( $values ) ) {
 							$values   = implode( ',', $values );
 							$wheres[] = $wpdb->_real_escape( $propertyName ) . " IN ({$values})";
+						}
+						break;
+					case 'boolean':
+						if ( $propertyValue ) {
+							$wheres[] = '`' . $propertyName . '` IS TRUE';
+						} else {
+							$wheres[] = "NOT `{$propertyName}`";
 						}
 						break;
 				}

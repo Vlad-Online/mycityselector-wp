@@ -16,25 +16,15 @@ import { CitiesCreate, CitiesEdit, CitiesList } from "./pages/Cities";
 import PublicIcon from "@material-ui/icons/Public";
 import ExploreIcon from "@material-ui/icons/Explore";
 import LocationCityIcon from "@material-ui/icons/LocationCity";
-import SettingsIcon from "@material-ui/icons/Settings";
 import { OptionsEdit } from "./pages/Options";
+import { FieldsCreate, FieldsEdit, FieldsList } from "./pages/Fields";
+import PostAddIcon from "@material-ui/icons/PostAdd";
+import AssignmentIcon from "@material-ui/icons/Assignment";
+import { FieldValuesList } from "./pages/FieldValues";
 
 const dataProvider = mcsDataProvider("/?rest_route=/mcs/v1");
 
-/*const theme = createMuiTheme({
-	overrides: {
-		/!*MuiInputBase: {
-			input: {
-				backgroundColor: "initial !important",
-				paddingTop: "23px !important",
-				paddingBottom: "6px !important",
-			},
-		},*!/
-	},
-});*/
-
 const App: FC = () => (
-	/*<Admin dataProvider={dataProvider} layout={McsLayout} theme={theme}>*/
 	<Admin dataProvider={dataProvider} layout={McsLayout}>
 		<Resource
 			name="Countries"
@@ -43,10 +33,9 @@ const App: FC = () => (
 			edit={CountriesEdit}
 			icon={PublicIcon}
 		/>
-		<Resource name="CountryNames" />
 		<Resource
 			name="Provinces"
-			options={{ label: "State / Province" }}
+			options={{ label: "States / Provinces" }}
 			list={ProvincesList}
 			create={ProvincesCreate}
 			edit={ProvincesEdit}
@@ -59,6 +48,24 @@ const App: FC = () => (
 			edit={CitiesEdit}
 			icon={LocationCityIcon}
 		/>
+		<Resource
+			name="Fields"
+			list={FieldsList}
+			create={FieldsCreate}
+			edit={FieldsEdit}
+			icon={PostAddIcon}
+		/>
+		<Resource
+			name="FieldValues"
+			list={FieldValuesList}
+			create={FieldsCreate}
+			edit={FieldsEdit}
+			icon={AssignmentIcon}
+			options={{ label: "Field Values" }}
+		/>
+		<Resource name="CountryFieldValues" />
+		<Resource name="ProvinceFieldValues" />
+		<Resource name="CityFieldValues" />
 		<Resource name="Options" edit={OptionsEdit} />
 	</Admin>
 );
