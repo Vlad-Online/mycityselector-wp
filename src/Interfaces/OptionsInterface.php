@@ -22,7 +22,7 @@ interface OptionsInterface {
 	 *
 	 * @return bool
 	 */
-	public function setDefaultCityId(  $defaultCityId ): bool;
+	public function setDefaultCityId( $defaultCityId ): bool;
 
 	public function getSeoMode(): int;
 
@@ -53,5 +53,7 @@ interface OptionsInterface {
 	public function setDebugEnabled( bool $debugEnabled = false ): bool;
 
 	public function toArray(): array;
+
+	public static function getInstance(): self;
 
 }

@@ -21,7 +21,7 @@ const OptionsToolbar = (props: any) => (
 );
 
 const GridSimpleForm = (props: any) => (
-	<Grid xs={12} md={10} lg={6}>
+	<Grid item xs={12} md={10} lg={6}>
 		<SimpleForm {...props} toolbar={<OptionsToolbar />}>
 			<TextInput
 				source="base_domain"

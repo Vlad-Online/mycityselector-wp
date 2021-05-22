@@ -190,7 +190,6 @@ abstract class BaseModel implements ModelInterface {
 						} else {
 							$this->$propertyName = $data[ $propertyName ];
 						}
-
 				}
 			}
 		}

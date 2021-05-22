@@ -15,4 +15,14 @@ interface CitiesInterface {
 	 * @throws Exception
 	 */
 	public static function findByName( $countryId, $provinceId, $name );
+
+	/**
+	 * @return ?ProvincesInterface
+	 */
+	public function getProvince();
+
+	/**
+	 * @return ?CountriesInterface
+	 */
+	public function getCountry();
 }

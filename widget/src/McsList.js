@@ -23,7 +23,7 @@ const McsListItem = memo(({ isSelected, onClick, index, title }) => {
 const useStyles = makeStyles(() => ({
 	root: {
 		overflow: "auto",
-		maxHeight: "calc(100vh - 180px)",
+		maxHeight: "calc(100vh - 200px)",
 		"&::-webkit-scrollbar": {
 			width: "0.5rem",
 		},

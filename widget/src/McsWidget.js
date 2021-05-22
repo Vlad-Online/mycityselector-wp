@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import {
 	Box,
+	Button,
+	ButtonGroup,
 	createMuiTheme,
 	IconButton,
 	Link,
+	Popover,
 	Typography,
 	withStyles,
 } from "@material-ui/core";
@@ -14,6 +17,12 @@ import CloseIcon from "@material-ui/icons/Close";
 import { ListCountriesProvincesCities } from "./ListCountriesProvincesCities";
 import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
 import { ListCities } from "./ListCities";
+import {
+	LIST_MODE_CITIES,
+	LIST_MODE_COUNTRIES_PROVINCES_CITIES,
+} from "./constants";
+import PropTypes from "prop-types";
+import _ from "lodash";
 
 const theme = createMuiTheme({
 	typography: {
@@ -67,10 +76,21 @@ const useStyles = makeStyles(() => ({
 	paper: {
 		overflowY: "visible",
 	},
+	popup: {
+		padding: theme.spacing(1),
+		textAlign: "center",
+	},
 }));
 
 export const McsWidget = ({ options, data }) => {
 	const [open, setOpen] = useState(false);
+	const [showPopup, setShowPopup] = useState(true);
+	const linkRef = React.useRef();
+
+	const defaultCity = _.find(_.get(data, "cities"), [
+		"id",
+		_.get(options, "default_city_id"),
+	]);
 
 	const handleLinkClick = (e) => {
 		e.preventDefault();
@@ -81,14 +101,61 @@ export const McsWidget = ({ options, data }) => {
 		setOpen(false);
 	};
 
-	const handleCitySelect = () => {};
+	const handlePopupNoClick = () => {
+		setShowPopup(false);
+		setOpen(true);
+	};
+
+	const handleCitySelect = useCallback(() => {
+		//TODO
+		setOpen(false);
+		setShowPopup(false);
+	}, []);
 	const classes = useStyles();
 	return (
 		<ThemeProvider theme={theme}>
 			<Box m={2}>
-				<Link href="#" onClick={handleLinkClick}>
+				<Link
+					aria-describedby="mcs-popup"
+					href="#"
+					onClick={handleLinkClick}
+					ref={linkRef}
+				>
 					Choose location
 				</Link>
+				<Popover
+					id="mcs-popup"
+					open={showPopup}
+					anchorEl={() => linkRef.current}
+					onClose={() => setShowPopup(false)}
+					anchorOrigin={{
+						vertical: "bottom",
+						horizontal: "center",
+					}}
+					transformOrigin={{
+						vertical: "top",
+						horizontal: "center",
+					}}
+					classes={{
+						paper: classes.popup,
+					}}
+				>
+					<Typography>
+						Is {_.get(defaultCity, "title")} your city?
+					</Typography>
+					<ButtonGroup
+						variant="contained"
+						size="small"
+						aria-label="contained primary button group"
+					>
+						<Button color="primary" onClick={handleCitySelect}>
+							Yes
+						</Button>
+						<Button color="secondary" onClick={handlePopupNoClick}>
+							No
+						</Button>
+					</ButtonGroup>
+				</Popover>
 			</Box>
 			<Dialog
 				open={open}
@@ -99,19 +166,20 @@ export const McsWidget = ({ options, data }) => {
 					paper: classes.paper,
 				}}
 				fullWidth
-				maxWidth={options?.mode === 0 ? "sm" : "md"}
+				maxWidth={options?.list_mode === LIST_MODE_CITIES ? "sm" : "md"}
 			>
 				<DialogTitle id="scroll-dialog-title" onClose={handleClose}>
 					{options?.title ?? ""}
 				</DialogTitle>
 				<DialogContent className={classes.root}>
-					{options?.mode === 0 && (
+					{options?.list_mode === LIST_MODE_CITIES && (
 						<ListCities
 							data={data}
 							onSelectCity={handleCitySelect}
 						/>
 					)}
-					{options?.mode === 2 && (
+					{options?.list_mode ===
+						LIST_MODE_COUNTRIES_PROVINCES_CITIES && (
 						<ListCountriesProvincesCities
 							data={data}
 							onSelectCity={handleCitySelect}
@@ -121,4 +189,17 @@ export const McsWidget = ({ options, data }) => {
 			</Dialog>
 		</ThemeProvider>
 	);
+};
+
+McsWidget.propTypes = {
+	options: {
+		title: PropTypes.string,
+		list_mode: PropTypes.number,
+		default_city_id: PropTypes.number,
+	},
+	data: {
+		countries: PropTypes.array,
+		provinces: PropTypes.array,
+		cities: PropTypes.array,
+	},
 };

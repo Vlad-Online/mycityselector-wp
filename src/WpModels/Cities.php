@@ -18,9 +18,6 @@ class Cities extends BaseModel implements CitiesInterface {
 		'country_id',
 		'province_id',
 		'subdomain',
-		//'post_index',
-		//'lat',
-		//'lng',
 		'published',
 		'ordering',
 	];
@@ -30,9 +27,6 @@ class Cities extends BaseModel implements CitiesInterface {
 	public $country_id;
 	public $province_id;
 	public $subdomain;
-	//public $post_index;
-	//public $lat;
-	//public $lng;
 	public $published;
 	public $ordering;
 
@@ -61,5 +55,21 @@ class Cities extends BaseModel implements CitiesInterface {
 		$model->fillProperties( $modelData );
 
 		return $model;
+	}
+
+	/**
+	 * @inheritDoc
+	 * @throws Exception
+	 */
+	public function getProvince() {
+		return Provinces::findById( $this->province_id );
+	}
+
+	/**
+	 * @inheritDoc
+	 * @throws Exception
+	 */
+	public function getCountry() {
+		return Countries::findById( $this->country_id );
 	}
 }

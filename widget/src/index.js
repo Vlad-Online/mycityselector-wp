@@ -1,18 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { McsWidget } from "./McsWidget";
+import { LIST_MODE_CITIES } from "./constants";
 
 //console.log(window.mcs_options?.title);
 
 ReactDOM.render(
 	<React.StrictMode>
-		<McsWidget
-			options={{
-				title: window.mcs?.options?.title ?? "Select your location",
-				mode: window.mcs?.options?.mode ?? 0,
-			}}
-			data={window.mcs?.data ?? {}}
-		/>
+		<McsWidget options={window.mcs?.options} data={window.mcs?.data} />
 	</React.StrictMode>,
 	document.getElementById("mcs-widget")
 );

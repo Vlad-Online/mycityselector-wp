@@ -8,10 +8,10 @@ use Mcs\Data;
 
 class McsWidget extends \WP_Widget {
 	protected $modes = [
-		0 => 'Cities only',
-		1 => 'Provinces / States and Cities',
-		2 => 'Countries,  Provinces / States and Cities',
-		3 => 'Countries and Cities'
+		Data::LIST_MODE_CITIES                     => 'Cities only',
+		Data::LIST_MODE_PROVINCES_CITIES           => 'Provinces / States and Cities',
+		Data::LIST_MODE_COUNTRIES_PROVINCES_CITIES => 'Countries,  Provinces / States and Cities',
+		Data::LIST_MODE_COUNTRIES_CITIES           => 'Countries and Cities'
 	];
 
 
@@ -24,12 +24,13 @@ class McsWidget extends \WP_Widget {
 	}
 
 	public function widget( $args, $instance ) {
-		//xdebug_break();
+		$options = Options::getInstance();
 		wp_add_inline_script( 'mcs-widget-script', '
 		window.mcs={};
 		window.mcs.options={};
 		window.mcs.options.title=\'' . $instance['title'] . '\';
-		window.mcs.options.mode=' . $instance['mode'] . ';
+		window.mcs.options.list_mode=' . $instance['list_mode'] . ';
+		window.mcs.options.default_city_id=' . $options->getDefaultCityId() . ';
 		window.mcs.data=JSON.parse('.json_encode(Data::getInstance()->getWidgetDataJson()).');
 		', 'before' );
 		?>
@@ -42,7 +43,7 @@ class McsWidget extends \WP_Widget {
 			(array) $instance,
 			[
 				'title' => 'Please select your location',
-				'mode'  => 0,
+				'list_mode'  => 0,
 			]
 		);
 		?>
@@ -53,12 +54,12 @@ class McsWidget extends \WP_Widget {
 				   value="<?php echo esc_attr( $instance['title'] ); ?>"/>
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'mode' ); ?>"><?php _e( 'Mode:' ); ?></label>
-			<select class="widefat" id="<?php echo $this->get_field_id( 'mode' ); ?>"
-					name="<?php echo $this->get_field_name( 'mode' ); ?>">
+			<label for="<?php echo $this->get_field_id( 'list_mode' ); ?>"><?php _e( 'Mode:' ); ?></label>
+			<select class="widefat" id="<?php echo $this->get_field_id( 'list_mode' ); ?>"
+					name="<?php echo $this->get_field_name( 'list_mode' ); ?>">
 				<?php foreach ( $this->modes as $modeId => $modeTitle ) : ?>
 					<option
-						value="<?= esc_attr( $modeId ); ?>" <?php selected( $modeId, $instance['mode'] ); ?>>
+						value="<?= esc_attr( $modeId ); ?>" <?php selected( $modeId, $instance['list_mode'] ); ?>>
 						<?= esc_html( $modeTitle ); ?>
 					</option>
 				<?php endforeach; ?>
@@ -70,7 +71,7 @@ class McsWidget extends \WP_Widget {
 	public function update( $new_instance, $old_instance ) {
 		$instance          = [];
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
-		$instance['mode']  = (int) $new_instance['mode'];
+		$instance['list_mode']  = (int) $new_instance['list_mode'];
 
 		return $instance;
 	}

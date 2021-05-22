@@ -84,7 +84,7 @@ class Options implements OptionsInterface {
 		return [
 			'id'                      => $this->id,
 			'base_domain'             => $this->getBaseDomain(),
-			'default_city_id'         => (string)$this->getDefaultCityId(),
+			'default_city_id'         => $this->getDefaultCityId(),
 			'seo_mode'                => $this->getSeoMode(),
 			'country_choose_enabled'  => $this->getCountryChooseEnabled(),
 			'province_choose_enabled' => $this->getProvinceChooseEnabled(),
@@ -93,5 +93,14 @@ class Options implements OptionsInterface {
 			'log_enabled'             => $this->getLogEnabled(),
 			'debug_enabled'           => $this->getDebugEnabled()
 		];
+	}
+
+	public static function getInstance(): OptionsInterface {
+		static $options;
+		if ( ! $options ) {
+			$options = new self();
+		}
+
+		return $options;
 	}
 }
