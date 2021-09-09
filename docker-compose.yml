@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  wordpress:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb
+      PHP_IDE_CONFIG: serverName=mcs
+    volumes:
+      - wordpress:/var/www/html
+      - ./:/var/www/html/wp-content/plugins/mcs
+    networks:
+      default:
+        aliases:
+          - wordpress.local
+          - usa.wordpress.local
+          - new-york-state.wordpress.local
+          - california.wordpress.local
+          - los-angeles.wordpress.local
+          - germany.wordpress.local
+          - brandenburg.wordpress.local
+          - berlin.wordpress.local
+          - bayern.wordpress.local
+          - munchen.wordpress.local
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - 33306:3306
+#  selenium-hub:
+#    image: selenium/hub:4.0.0-beta-4-prerelease-20210517
+#    container_name: selenium-hub
+#    ports:
+#      - "4442:4442"
+#      - "4443:4443"
+#      - "4444:4444"
+  chrome:
+    image: selenium/standalone-chrome:4.0.0-rc-1-prerelease-20210823
+    volumes:
+      - /dev/shm:/dev/shm
+#    depends_on:
+#      - selenium-hub
+    environment:
+      - SCREEN_WIDTH=960
+      - SCREEN_HEIGHT=1080
+      - SE_NODE_MAX_SESSIONS=50
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+#      - SE_EVENT_BUS_HOST=selenium-hub
+#      - SE_EVENT_BUS_PUBLISH_PORT=4442
+#      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+#      - "6900:5900"
+      - "7900:7900"
+volumes:
+  wordpress:
+  db:
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.10.0.0/16"

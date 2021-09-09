@@ -5,12 +5,14 @@ namespace Mcs\Interfaces;
 
 interface ModelInterface {
 
+	public function getId(): int;
+
 	/**
 	 * @param int $id
 	 *
-	 * @return ModelInterface|mixed
+	 * @return ModelInterface|static
 	 */
-	public static function findById( int $id );
+	public static function findById( int $id ): ?ModelInterface;
 
 	/**
 	 * @param $property
@@ -18,7 +20,7 @@ interface ModelInterface {
 	 *
 	 * @return ModelInterface
 	 */
-	public static function findFirstByPropertyValue( $property,  $value): ModelInterface;
+	public static function findFirstByPropertyValue( $property, $value ): ModelInterface;
 
 	/**
 	 * @param $property
@@ -26,20 +28,22 @@ interface ModelInterface {
 	 *
 	 * @return ModelInterface[]
 	 */
-	public static function findByPropertyValue( $property,  $value): array;
+	public static function findByPropertyValue( $property, $value ): array;
 
 	/**
+	 * @param int|null $limit
+	 *
 	 * @return ModelInterface[]
 	 */
-	public static function all(): array;
+	public static function all(int $limit = null): array;
 
-	public static function total() : int;
+	public static function total(): int;
 
 	public static function create( $data = [] ): ModelInterface;
 
 	public function update( $data = [] ): ModelInterface;
 
-	public function delete( ): bool;
+	public function delete(): bool;
 
 	public static function getTableName(): string;
 

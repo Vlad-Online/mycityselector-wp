@@ -8,7 +8,6 @@ import {
 	Datagrid,
 	Edit,
 	EditButton,
-	Filter,
 	List,
 	ReferenceInput,
 	SimpleForm,

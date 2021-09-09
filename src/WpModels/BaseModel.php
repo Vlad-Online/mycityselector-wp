@@ -5,7 +5,6 @@ namespace Mcs\WpModels;
 
 use Exception;
 use Mcs\Interfaces\ModelInterface;
-use WP_Error;
 
 abstract class BaseModel implements ModelInterface {
 
@@ -14,12 +13,16 @@ abstract class BaseModel implements ModelInterface {
 	 */
 	public $id;
 
+	public function getId(): int {
+		return $this->id;
+	}
+
 	/**
 	 * @param int $id
 	 *
-	 * @return static|WP_Error
+	 * @return static|null
 	 */
-	public static function findById( int $id ) {
+	public static function findById( int $id ): ?ModelInterface {
 		global $wpdb;
 		$model = new static();
 		$table = $model->getTableName();
@@ -31,7 +34,7 @@ abstract class BaseModel implements ModelInterface {
 			), 'ARRAY_A'
 		);
 		if ( ! $modelData ) {
-			return new WP_Error( 404, 'Entry not found.' );
+			return null;
 		}
 		$model->fillProperties( $modelData );
 
@@ -91,13 +94,19 @@ abstract class BaseModel implements ModelInterface {
 	}
 
 	/**
+	 * @param int|null $limit
+	 *
 	 * @return static[]
 	 */
-	public static function all(): array {
+	public static function all( int $limit = null ): array {
 		global $wpdb;
 
-		$table      = ( new static() )->getTableName();
-		$modelsData = $wpdb->get_results( "SELECT * FROM {$table}", 'ARRAY_A' );
+		$table = ( new static() )->getTableName();
+		$query = "SELECT * FROM {$table}";
+		if ( $limit !== null ) {
+			$query .= ' limit ' . (int) $limit;
+		}
+		$modelsData = $wpdb->get_results( $query, 'ARRAY_A' );
 		$models     = [];
 		foreach ( $modelsData as $modelData ) {
 			$model = new static();
@@ -146,8 +155,8 @@ abstract class BaseModel implements ModelInterface {
 		global $wpdb;
 
 		foreach ( $this->getProperties() as $property ) {
-			if ( $property != 'id' ) {
-				$this->$property = $data[ $property ] ?? $this->$property;
+			if ( $property != 'id' && key_exists( $property, $data ) ) {
+				$this->$property = $data[ $property ];
 			}
 		}
 

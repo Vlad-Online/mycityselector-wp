@@ -5,20 +5,34 @@ import React, { useState, memo, useMemo, useCallback } from "react";
 import List from "@material-ui/core/List";
 import _ from "lodash";
 import { makeStyles } from "@material-ui/core/styles";
+import { McsCity, McsCountry, McsLocation, McsProvince } from "./types/data";
+import { handleLocationSelectFn } from "./McsWidget";
 
-const McsListItem = memo(({ isSelected, onClick, index, title }) => {
+interface McsListItemProps {
+	isSelected: boolean | undefined;
+	onClick: handleLocationSelectFn;
+	location: McsCity | McsProvince | McsCountry;
+	title: string;
+	prefix: string;
+}
+const McsListItem: React.FC<McsListItemProps> = ({
+	isSelected,
+	onClick,
+	location,
+	title,
+	prefix,
+}: McsListItemProps) => {
+	const clickItem = useCallback(() => onClick(location), [location, onClick]);
 	return (
 		<Box borderLeft={isSelected ? 4 : 0} borderColor="primary.main">
-			<ListItem
-				button
-				selected={isSelected}
-				onClick={() => onClick(index)}
-			>
-				<ListItemText primary={title} />
+			<ListItem button selected={isSelected} onClick={clickItem}>
+				<ListItemText id={`${prefix}-${location.id}`} primary={title} />
 			</ListItem>
 		</Box>
 	);
-});
+};
+
+const McsListItemMemo = memo(McsListItem);
 
 const useStyles = makeStyles(() => ({
 	root: {
@@ -37,36 +51,37 @@ const useStyles = makeStyles(() => ({
 	},
 }));
 
-const McsList = ({
+interface McsListProps {
+	title?: string;
+	items: McsLocation[];
+	selectedIndex?: number;
+	handleItemClick: handleLocationSelectFn;
+	prefix: string;
+	withCitySearch?: boolean;
+}
+const McsList: React.FC<McsListProps> = ({
 	title,
 	items,
 	selectedIndex,
 	handleItemClick,
+	prefix,
 	withCitySearch,
-	onSearchInput,
-}) => {
-	const [searchTitle, setSearchTitle] = useState("");
+}: McsListProps) => {
+	const [searchValue, setSearchValue] = useState("");
 	const classes = useStyles();
-	const filteredItems = useMemo(() => {
-		if (searchTitle) {
-			const loweredSearchTitle = _.toLower(searchTitle);
-			return _.filter(items, (item) => {
-				return _.includes(
-					_.toLower(_.get(item, "title")),
-					loweredSearchTitle
-				);
-			});
+	const filteredItems = useMemo<McsLocation[]>((): McsLocation[] => {
+		if (searchValue) {
+			const loweredSearchTitle = _.toLower(searchValue);
+			return _.filter(items, (item: McsLocation) => {
+				return _.includes(_.toLower(item.title), loweredSearchTitle);
+			}) as McsLocation[];
 		}
 		return items;
-	}, [items, searchTitle]);
+	}, [items, searchValue]);
 
-	const handleSearchInput = useCallback(
-		(e) => {
-			setSearchTitle(e.target.value);
-			onSearchInput();
-		},
-		[onSearchInput]
-	);
+	const handleSearchInput = useCallback((e) => {
+		setSearchValue(e.target.value);
+	}, []);
 
 	return (
 		<>
@@ -76,7 +91,7 @@ const McsList = ({
 					type="search"
 					className="search-field"
 					placeholder="Search…"
-					value={searchTitle}
+					value={searchValue}
 					onChange={handleSearchInput}
 				/>
 			)}
@@ -84,12 +99,13 @@ const McsList = ({
 				{filteredItems.map((item, index) => {
 					const isSelected = selectedIndex === index;
 					return (
-						<McsListItem
+						<McsListItemMemo
 							key={_.get(item, "id")}
-							index={index}
+							location={item}
 							onClick={handleItemClick}
 							isSelected={isSelected}
 							title={_.get(item, "title")}
+							prefix={prefix}
 						/>
 					);
 				})}

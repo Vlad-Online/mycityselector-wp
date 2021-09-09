@@ -14,8 +14,6 @@ class CityNames extends BaseModel implements CityNamesInterface {
 		'lang_code',
 		'name'
 	];
-
-	public $id;
 	public $city_id;
 	public $lang_code;
 	public $name;

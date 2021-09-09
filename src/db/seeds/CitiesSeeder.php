@@ -146,7 +146,7 @@ class CitiesSeeder extends AbstractSeed {
 
 		try {
 //			$cityName = CityNames::findByName( $countryId, $provinceId, $name );
-			$city = Cities::findByName( $countryId, $provinceId, $name );
+			$city = Cities::findByTitle( $countryId, $provinceId, $name );
 		} catch ( Exception $exception ) {
 			$city = Cities::create( [
 				'title'       => $name,

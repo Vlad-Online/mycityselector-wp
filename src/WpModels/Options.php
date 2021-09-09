@@ -3,10 +3,10 @@
 
 namespace Mcs\WpModels;
 
+use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\OptionsInterface;
 
 class Options implements OptionsInterface {
-	public $id = 0;
 
 	public function getBaseDomain(): string {
 		return (string) get_option( 'mcs_base_domain' );
@@ -16,19 +16,27 @@ class Options implements OptionsInterface {
 		return update_option( 'mcs_base_domain', $domain );
 	}
 
-	public function getDefaultCityId(): int {
-		return (int) get_option( 'mcs_default_city_id' );
+	public function getDefaultCity(): ?CitiesInterface {
+		static $city;
+		if ( empty( $city ) ) {
+			$city = Cities::findById( (int) get_option( 'mcs_default_city_id' ) );
+			if ( empty( $city ) ) {
+				$city = Cities::all( 1 )[0] ?? null;
+			}
+		}
+
+		return $city;
 	}
 
-	public function setDefaultCityId( $defaultCityId ): bool {
-		return update_option( 'mcs_default_city_id', $defaultCityId );
+	public function setDefaultCity( CitiesInterface $defaultCity ): bool {
+		return update_option( 'mcs_default_city_id', $defaultCity->getId() );
 	}
 
 	public function getSeoMode(): int {
 		return (int) get_option( 'mcs_seo_mode' );
 	}
 
-	public function setSeoMode( int $seoMode = self::SEO_MODE_DISABLED ): bool {
+	public function setSeoMode( int $seoMode = self::SEO_MODE_COOKIE ): bool {
 		return update_option( 'mcs_seo_mode', $seoMode );
 	}
 
@@ -81,10 +89,12 @@ class Options implements OptionsInterface {
 	}
 
 	public function toArray(): array {
+		$defaultCity = $this->getDefaultCity();
+
 		return [
-			'id'                      => $this->id,
+			'id'                      => 0,
 			'base_domain'             => $this->getBaseDomain(),
-			'default_city_id'         => $this->getDefaultCityId(),
+			'default_city_id'         => $defaultCity ? $defaultCity->getId() : null,
 			'seo_mode'                => $this->getSeoMode(),
 			'country_choose_enabled'  => $this->getCountryChooseEnabled(),
 			'province_choose_enabled' => $this->getProvinceChooseEnabled(),

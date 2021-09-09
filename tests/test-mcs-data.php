@@ -70,7 +70,7 @@ class testMcsData extends TestCase {
 				$this->defaultCityId = $defaultCityId;
 			}
 
-			public function getDefaultCityId(): int {
+			public function getDefaultCity(): int {
 				return $this->defaultCityId;
 			}
 		} );

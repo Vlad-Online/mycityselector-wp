@@ -21,10 +21,11 @@ import { FieldsCreate, FieldsEdit, FieldsList } from "./pages/Fields";
 import PostAddIcon from "@material-ui/icons/PostAdd";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import { FieldValuesList } from "./pages/FieldValues";
+import React from "react";
 
 const dataProvider = mcsDataProvider("/?rest_route=/mcs/v1");
 
-const App: FC = () => (
+export const App: FC = () => (
 	<Admin dataProvider={dataProvider} layout={McsLayout}>
 		<Resource
 			name="Countries"
@@ -70,4 +71,4 @@ const App: FC = () => (
 	</Admin>
 );
 
-export default App;
+// export default App;

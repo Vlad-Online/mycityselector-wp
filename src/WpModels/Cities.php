@@ -5,6 +5,8 @@ namespace Mcs\WpModels;
 
 use Exception;
 use Mcs\Interfaces\CitiesInterface;
+use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\ProvincesInterface;
 
 /**
  * Class Cities
@@ -22,7 +24,6 @@ class Cities extends BaseModel implements CitiesInterface {
 		'ordering',
 	];
 
-	public $id;
 	public $title;
 	public $country_id;
 	public $province_id;
@@ -38,7 +39,7 @@ class Cities extends BaseModel implements CitiesInterface {
 		return $this->properties;
 	}
 
-	public static function findByName( $countryId, $provinceId, $name ) {
+	public static function findByTitle( int $countryId, int $provinceId, string $title ): CitiesInterface {
 		global $wpdb;
 		$model     = new static();
 		$table     = $model->getTableName();
@@ -46,7 +47,7 @@ class Cities extends BaseModel implements CitiesInterface {
 			$wpdb->prepare(
 				"SELECT * FROM {$table}
 					   WHERE title = %s AND country_id = %d AND province_id = %d LIMIT 1",
-				$name, $countryId, $provinceId
+				$title, $countryId, $provinceId
 			), 'ARRAY_A'
 		);
 		if ( ! $modelData ) {
@@ -58,18 +59,28 @@ class Cities extends BaseModel implements CitiesInterface {
 	}
 
 	/**
-	 * @inheritDoc
 	 * @throws Exception
 	 */
-	public function getProvince() {
+	public function getProvince(): ProvincesInterface {
 		return Provinces::findById( $this->province_id );
 	}
 
 	/**
-	 * @inheritDoc
 	 * @throws Exception
 	 */
-	public function getCountry() {
+	public function getCountry(): CountriesInterface {
 		return Countries::findById( $this->country_id );
+	}
+
+	public function getTitle(): string {
+		return $this->title;
+	}
+
+	public function getSubDomain(): ?string {
+		return $this->subdomain;
+	}
+
+	public function isPublished(): bool {
+		return $this->published;
 	}
 }

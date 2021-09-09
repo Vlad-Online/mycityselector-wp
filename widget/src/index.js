@@ -1,9 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { McsWidget } from "./McsWidget";
-import { LIST_MODE_CITIES } from "./constants";
-
-//console.log(window.mcs_options?.title);
 
 ReactDOM.render(
 	<React.StrictMode>

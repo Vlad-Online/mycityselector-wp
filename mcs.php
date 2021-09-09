@@ -48,10 +48,12 @@ add_action( 'admin_init', 'mcs_register_options' );
 //Widget registration
 add_action( 'widgets_init', function () {
 	register_widget( McsWidget::class );
-	wp_enqueue_style( 'mcs-widget-font', 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap' );
-	$assetFile = include( plugin_dir_path( __FILE__ ) . 'widget/build/index.asset.php' );
-	wp_enqueue_script( 'mcs-widget-script', plugins_url( 'widget/build/index.js', __FILE__ ),
-		$assetFile['dependencies'],
-		$assetFile['version'],
-		true );
+	if ( ! is_admin() ) {
+		wp_enqueue_style( 'mcs-widget-font', 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap' );
+		$assetFile = include( plugin_dir_path( __FILE__ ) . 'widget/build/index.asset.php' );
+		wp_enqueue_script( 'mcs-widget-script', plugins_url( 'widget/build/index.js', __FILE__ ),
+			$assetFile['dependencies'],
+			$assetFile['version'],
+			true );
+	}
 } );

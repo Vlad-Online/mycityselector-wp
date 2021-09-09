@@ -3,6 +3,7 @@
 
 namespace Mcs\WpModels;
 
+use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
 
 class Countries extends BaseModel implements CountriesInterface {
@@ -18,7 +19,6 @@ class Countries extends BaseModel implements CountriesInterface {
 		'default_city_id'
 	];
 
-	public $id;
 	public $title;
 	public $subdomain;
 	public $published;
@@ -105,5 +105,31 @@ class Countries extends BaseModel implements CountriesInterface {
 		}
 
 		return $result;
+	}
+
+	public function getDefaultCity(): CitiesInterface {
+		global $wpdb;
+		$tableName = Cities::getTableName();
+		$modelData = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$tableName} WHERE id = %d limit 1",
+				$this->default_city_id
+			), 'ARRAY_A'
+		);
+		$model     = new Cities();
+		$model->fillProperties( $modelData );
+
+		return $model;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getTitle(): string {
+		return $this->title;
+	}
+
+	public function isPublished(): bool {
+		return $this->published;
 	}
 }

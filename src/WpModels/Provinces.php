@@ -4,6 +4,8 @@
 namespace Mcs\WpModels;
 
 use Exception;
+use Mcs\Interfaces\CitiesInterface;
+use Mcs\Interfaces\CountriesInterface;
 use Mcs\Interfaces\ProvincesInterface;
 
 class Provinces extends BaseModel implements ProvincesInterface {
@@ -13,18 +15,13 @@ class Provinces extends BaseModel implements ProvincesInterface {
 		'title',
 		'country_id',
 		'subdomain',
-		//'lat',
-		//'lng',
 		'published',
 		'ordering'
 	];
 
-	public $id;
 	public $title;
 	public $country_id;
 	public $subdomain;
-	//public $lat;
-	//public $lng;
 	public $published;
 	public $ordering;
 
@@ -43,7 +40,7 @@ class Provinces extends BaseModel implements ProvincesInterface {
 	 * @return static
 	 * @throws Exception
 	 */
-	public static function findByName($countryId, $name) {
+	public static function findByName( $countryId, $name ) {
 		global $wpdb;
 		$model     = new static();
 		$table     = $model->getTableName();
@@ -62,4 +59,40 @@ class Provinces extends BaseModel implements ProvincesInterface {
 		return $model;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	public function getTitle(): string {
+		return $this->title;
+	}
+
+	/**
+	 * @return Cities[]
+	 */
+	public function getCities(): array {
+		global $wpdb;
+		$tableName  = Cities::getTableName();
+		$modelsData = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$tableName} WHERE province_id = %d",
+				$this->id
+			), 'ARRAY_A'
+		);
+		$result     = [];
+		foreach ( $modelsData as $modelData ) {
+			$model = new Cities();
+			$model->fillProperties( $modelData );
+			$result[] = $model;
+		}
+
+		return $result;
+	}
+
+	public function isPublished(): bool {
+		return $this->published;
+	}
+
+	public function getCountry(): CountriesInterface {
+		return Countries::findById( $this->country_id );
+	}
 }

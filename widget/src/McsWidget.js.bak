@@ -19,7 +19,7 @@ import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
 import { ListCities } from "./ListCities";
 import {
 	LIST_MODE_CITIES,
-	LIST_MODE_COUNTRIES_PROVINCES_CITIES,
+	LIST_MODE_COUNTRIES_PROVINCES_CITIES, SEO_MODE_COOKIE,
 } from "./constants";
 import PropTypes from "prop-types";
 import _ from "lodash";
@@ -44,6 +44,7 @@ const styles = (theme) => ({
 });
 
 const DialogTitle = withStyles(styles)(
+	// @ts-ignore
 	({ children, classes, onClose, ...other }) => {
 		return (
 			<MuiDialogTitle
@@ -107,11 +108,21 @@ export const McsWidget = ({ options, data }) => {
 	};
 
 	const handleCitySelect = useCallback(() => {
-		//TODO
+		switch (_.get(options, "seo_mode")) {
+			case SEO_MODE_COOKIE:
+
+				break
+		}
+
 		setOpen(false);
 		setShowPopup(false);
 	}, []);
 	const classes = useStyles();
+
+	const handleCitySelectCookieMode = useCallback(() => {
+		//TODO
+	}, [])
+
 	return (
 		<ThemeProvider theme={theme}>
 			<Box m={2}>
@@ -119,6 +130,7 @@ export const McsWidget = ({ options, data }) => {
 					aria-describedby="mcs-popup"
 					href="#"
 					onClick={handleLinkClick}
+					// @ts-ignore
 					ref={linkRef}
 				>
 					Choose location
@@ -126,6 +138,7 @@ export const McsWidget = ({ options, data }) => {
 				<Popover
 					id="mcs-popup"
 					open={showPopup}
+					// @ts-ignore
 					anchorEl={() => linkRef.current}
 					onClose={() => setShowPopup(false)}
 					anchorOrigin={{

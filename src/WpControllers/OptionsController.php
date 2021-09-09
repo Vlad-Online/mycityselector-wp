@@ -115,7 +115,7 @@ class OptionsController extends BaseController {
 		if ( $city instanceof WP_Error || ! $city->published ) {
 			return new WP_Error( 400, 'Wrong default city' );
 		}
-		$options->setDefaultCityId( $city->id );
+		$options->setDefaultCity( $city->id );
 		$options->setSeoMode( (int) $request['seo_mode'] );
 		$options->setCountryChooseEnabled( (bool) $request['country_choose_enabled'] );
 		$options->setProvinceChooseEnabled( (bool) $request['province_choose_enabled'] );

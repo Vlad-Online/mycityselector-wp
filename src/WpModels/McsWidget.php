@@ -25,12 +25,15 @@ class McsWidget extends \WP_Widget {
 
 	public function widget( $args, $instance ) {
 		$options = Options::getInstance();
+		$defaultCity = $options->getDefaultCity();
 		wp_add_inline_script( 'mcs-widget-script', '
 		window.mcs={};
 		window.mcs.options={};
 		window.mcs.options.title=\'' . $instance['title'] . '\';
 		window.mcs.options.list_mode=' . $instance['list_mode'] . ';
-		window.mcs.options.default_city_id=' . $options->getDefaultCityId() . ';
+		window.mcs.options.seo_mode=' . $options->getSeoMode() . ';
+		window.mcs.options.default_city_id=' . ($defaultCity ? $defaultCity->getId() : 'null') .';
+		window.mcs.options.base_domain="' . $options->getBaseDomain() . '";
 		window.mcs.data=JSON.parse('.json_encode(Data::getInstance()->getWidgetDataJson()).');
 		', 'before' );
 		?>

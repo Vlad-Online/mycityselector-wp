@@ -3,9 +3,9 @@
 namespace Mcs\Interfaces;
 
 interface OptionsInterface {
-	const SEO_MODE_DISABLED = 0;
-	const SEO_MODE_SUBDOMAIN = 1;
-	const SEO_MODE_SUBFOLDER = 2;
+	const SEO_MODE_COOKIE = 1;
+	const SEO_MODE_SUBDOMAIN = 2;
+	const SEO_MODE_SUBFOLDER = 3;
 
 	const ASK_MODE_DIALOG = 0;
 	const ASK_MODE_TOOLTIP = 1;
@@ -15,18 +15,18 @@ interface OptionsInterface {
 
 	public function setBaseDomain( string $domain ): bool;
 
-	public function getDefaultCityId(): int;
+	public function getDefaultCity(): ?CitiesInterface;
 
 	/**
-	 * @param int|null $defaultCityId
+	 * @param CitiesInterface $defaultCity
 	 *
 	 * @return bool
 	 */
-	public function setDefaultCityId( $defaultCityId ): bool;
+	public function setDefaultCity(CitiesInterface $defaultCity ): bool;
 
 	public function getSeoMode(): int;
 
-	public function setSeoMode( int $seoMode = self::SEO_MODE_DISABLED ): bool;
+	public function setSeoMode( int $seoMode = self::SEO_MODE_COOKIE ): bool;
 
 	public function getCountryChooseEnabled(): bool;
 

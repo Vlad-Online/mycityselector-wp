@@ -101,7 +101,7 @@ export const CountriesCreate: FC = (props) => (
 export const CountriesEdit: FC = (props) => (
 	<Edit {...props}>
 		<SimpleForm>
-			<TextInput source="id" label="ID" />
+			<TextInput source="id" label="ID" disabled />
 			<TextInput source="title" label="Title" />
 			<TextInput source="subdomain" label="SubDomain" />
 			<BooleanInput source="published" label="Published" />

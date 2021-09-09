@@ -9,20 +9,22 @@ interface CitiesInterface {
 	/**
 	 * @param int $countryId
 	 * @param int $provinceId
-	 * @param string $name
+	 * @param string $title
 	 *
 	 * @return static
 	 * @throws Exception
 	 */
-	public static function findByName( $countryId, $provinceId, $name );
+	public static function findByTitle( int $countryId, int $provinceId, string $title ): ?CitiesInterface;
 
-	/**
-	 * @return ?ProvincesInterface
-	 */
-	public function getProvince();
+	public function getId(): int;
 
-	/**
-	 * @return ?CountriesInterface
-	 */
-	public function getCountry();
+	public function getTitle(): string;
+
+	public function getProvince(): ProvincesInterface;
+
+	public function getCountry(): CountriesInterface;
+
+	public function getSubDomain(): ?string;
+
+	public function isPublished(): bool;
 }

@@ -31,8 +31,8 @@ class testWpOptionsController extends WP_Test_REST_Controller_Testcase {
 	public function setUp() {
 		$this->options = new Options();
 		$this->options->setBaseDomain( '' );
-		$this->options->setDefaultCityId( null );
-		$this->options->setSeoMode( Options::SEO_MODE_DISABLED );
+		$this->options->setDefaultCity( null );
+		$this->options->setSeoMode( Options::SEO_MODE_COOKIE );
 		$this->options->setCountryChooseEnabled( false );
 		$this->options->setProvinceChooseEnabled( false );
 		$this->options->setAskMode( Options::ASK_MODE_DIALOG );
@@ -159,7 +159,7 @@ class testWpOptionsController extends WP_Test_REST_Controller_Testcase {
 	protected function check_model_data( Options $options, $data ) {
 		$this->assertEquals( 0, $data['id'] );
 		$this->assertEquals( $options->getBaseDomain(), $data['base_domain'] );
-		$this->assertEquals( $options->getDefaultCityId(), $data['default_city_id'] );
+		$this->assertEquals( $options->getDefaultCity()->getId(), $data['default_city_id'] );
 		$this->assertEquals( $options->getSeoMode(), $data['seo_mode'] );
 		$this->assertEquals( $options->getCountryChooseEnabled(), $data['country_choose_enabled'] );
 		$this->assertEquals( $options->getProvinceChooseEnabled(), $data['province_choose_enabled'] );

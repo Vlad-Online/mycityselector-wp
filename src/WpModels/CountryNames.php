@@ -14,7 +14,6 @@ class CountryNames extends BaseModel implements CountryNamesInterface {
 		'name'
 	];
 
-	public $id;
 	public $country_id;
 	public $lang_code;
 	public $name;

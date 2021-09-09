@@ -7,6 +7,12 @@ use Mcs\WpModels\Cities;
 use Mcs\WpModels\Provinces;
 
 interface CountriesInterface {
+	public function getId(): int;
+
+	/**
+	 * @return string
+	 */
+	public function getTitle(): string;
 
 	/**
 	 * @return int
@@ -27,4 +33,8 @@ interface CountriesInterface {
 	 * @return Cities[]
 	 */
 	public function getCities();
+
+	public function getDefaultCity(): CitiesInterface;
+
+	public function isPublished(): bool;
 }

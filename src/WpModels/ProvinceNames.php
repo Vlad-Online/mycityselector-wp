@@ -15,7 +15,6 @@ class ProvinceNames extends BaseModel implements ProvinceNamesInterface {
 		'name'
 	];
 
-	public $id;
 	public $province_id;
 	public $lang_code;
 	public $name;

@@ -1,5 +1,6 @@
 <?php
 
+use Mcs\Data;
 use Mcs\Interfaces\OptionsInterface;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\StringInput;
@@ -46,7 +47,7 @@ function mcs_register_options() {
 	register_setting( 'mcs', 'mcs_seo_mode', [
 		'type'        => 'integer',
 		'description' => 'SEO mode',
-		'default'     => OptionsInterface::SEO_MODE_DISABLED
+		'default'     => OptionsInterface::SEO_MODE_COOKIE
 	] );
 	register_setting( 'mcs', 'mcs_country_choose_enabled', [
 		'type'        => 'boolean',
@@ -98,7 +99,7 @@ function mcs_register_options() {
 }
 
 function mcs_remove_admin_css( $styles ) {
-	if ( ($_REQUEST['page'] ?? '') == 'mcs' ) {
+	if ( ( $_REQUEST['page'] ?? '' ) == 'mcs' ) {
 		return array_filter( $styles, function ( $value ) {
 			return $value !== 'forms';
 		} );
@@ -108,13 +109,15 @@ function mcs_remove_admin_css( $styles ) {
 }
 
 function mcs_admin_enqueue_scripts() {
-	wp_enqueue_script( 'mcs-bundle', 'http://localhost:3000/static/js/bundle.js', [], null, true );
+	$assetFile = include( plugin_dir_path( __FILE__ ) . 'admin/build/index.asset.php' );
+	wp_enqueue_script( 'mcs-bundle', plugins_url( 'admin/build/index.js', __FILE__ ),
+		$assetFile['dependencies'],
+		$assetFile['version'],
+		true );
 	wp_localize_script( 'mcs-bundle', 'wpApiSettings', [
 		'root'  => esc_url_raw( rest_url() ),
 		'nonce' => wp_create_nonce( 'wp_rest' )
 	] );
-	wp_enqueue_script( 'mcs-chunk-0', 'http://localhost:3000/static/js/0.chunk.js', [], null, true );
-	wp_enqueue_script( 'mcs-chunk-main', 'http://localhost:3000/static/js/main.chunk.js', [], null, true );
 	add_filter( 'print_styles_array', 'mcs_remove_admin_css' );
 }
 
@@ -127,20 +130,12 @@ function mcs_options_page() {
 		'',
 		20
 	);
-	/*add_submenu_page(
-		plugin_dir_path( __FILE__ ),
-		'MyCitySelector Plugin Options',
-		'MyCitySelector Plugin Options',
-		'manage_options',
-		plugin_dir_path( __FILE__ ) . '/options',
-		'mcs_options_page_html'
-	);*/
 }
 
 function mcs_start_ob() {
 	if ( ! is_admin() ) {
 		ob_start( function ( $body ) {
-			return false;
+			return Data::getInstance()->replaceTags( $body );
 		} );
 	}
 }
@@ -165,19 +160,13 @@ function mcs_base_domain_cb() {
 }
 
 function mcs_main_html() {
-	wp_enqueue_style( 'mcs-styles', plugin_dir_url( '' ) . 'mcs/admin/src/App.css' );
-	/*	wp_add_inline_style( 'admin-bar', "
-		#root {
-			all: initial;
-			* {
-				all: unset;
-			}
-	}" );*/
+//	wp_enqueue_style( 'mcs-styles', plugin_dir_url( '' ) . 'mcs/admin/src/App.css' );
+
 	?>
 	<div class="wrap">
 		<h1><?= esc_html( get_admin_page_title() ); ?></h1>
 		<noscript>You need to enable JavaScript to run this app.</noscript>
-		<div id="root"></div>
+		<div id="mcs-admin-root"></div>
 	</div>
 	<?php
 }
