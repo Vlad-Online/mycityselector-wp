@@ -5,8 +5,9 @@ namespace Mcs\WpModels;
 
 
 use Mcs\Data;
+use WP_Widget;
 
-class McsWidget extends \WP_Widget {
+class McsWidget extends WP_Widget {
 	protected $modes = [
 		Data::LIST_MODE_CITIES                     => 'Cities only',
 		Data::LIST_MODE_PROVINCES_CITIES           => 'Provinces / States and Cities',
@@ -25,14 +26,15 @@ class McsWidget extends \WP_Widget {
 
 	public function widget( $args, $instance ) {
 		$options = Options::getInstance();
-		$defaultCity = $options->getDefaultCity();
+		$defaultLocation = $options->getDefaultLocation();
 		wp_add_inline_script( 'mcs-widget-script', '
 		window.mcs={};
 		window.mcs.options={};
 		window.mcs.options.title=\'' . $instance['title'] . '\';
 		window.mcs.options.list_mode=' . $instance['list_mode'] . ';
 		window.mcs.options.seo_mode=' . $options->getSeoMode() . ';
-		window.mcs.options.default_city_id=' . ($defaultCity ? $defaultCity->getId() : 'null') .';
+		window.mcs.options.default_location_id=' . ($defaultLocation ? $defaultLocation->getId() : 'null') .';
+		window.mcs.options.default_location_type=' . ($defaultLocation ? $defaultLocation->getType() : 'null') .';
 		window.mcs.options.base_domain="' . $options->getBaseDomain() . '";
 		window.mcs.data=JSON.parse('.json_encode(Data::getInstance()->getWidgetDataJson()).');
 		', 'before' );

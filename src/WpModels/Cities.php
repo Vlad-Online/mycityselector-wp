@@ -6,6 +6,7 @@ namespace Mcs\WpModels;
 use Exception;
 use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\ProvincesInterface;
 
 /**
@@ -82,5 +83,9 @@ class Cities extends BaseModel implements CitiesInterface {
 
 	public function isPublished(): bool {
 		return $this->published;
+	}
+
+	public function getType(): int {
+		return DataInterface::LOCATION_TYPE_CITY;
 	}
 }

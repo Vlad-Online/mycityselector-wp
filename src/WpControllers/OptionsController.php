@@ -2,8 +2,11 @@
 
 namespace Mcs\WpControllers;
 
+use Mcs\Interfaces\DataInterface;
 use Mcs\WpModels\Cities;
+use Mcs\WpModels\Countries;
 use Mcs\WpModels\Options;
+use Mcs\WpModels\Provinces;
 use WP_Error;
 use WP_REST_Response;
 
@@ -108,14 +111,36 @@ class OptionsController extends BaseController {
 			return new WP_REST_Response( [
 				'message' => 'Wrong domain name'
 			], 400 );
-			//return new WP_Error( 400, 'Wrong domain name' );
 		}
 		$options->setBaseDomain( $domain );
-		$city = Cities::findById( $request['default_city_id'] );
-		if ( $city instanceof WP_Error || ! $city->published ) {
-			return new WP_Error( 400, 'Wrong default city' );
+
+		switch ( $request['default_location_type'] ) {
+			case DataInterface::LOCATION_TYPE_CITY:
+				$model = Cities::findById( $request['default_location_id'] );
+				if ( ! $model || ! $model->published ) {
+					return new WP_Error( 400, 'Wrong default city' );
+				}
+				$options->setDefaultLocationId( $model->id );
+				$options->setDefaultLocationType( $request['default_location_type'] );
+				break;
+			case DataInterface::LOCATION_TYPE_PROVINCE:
+				$model = Provinces::findById( $request['default_location_id'] );
+				if ( ! $model || ! $model->published ) {
+					return new WP_Error( 400, 'Wrong default province / state' );
+				}
+				$options->setDefaultLocationId( $model->id );
+				$options->setDefaultLocationType( $request['default_location_type'] );
+				break;
+			case DataInterface::LOCATION_TYPE_COUNTRY:
+				$model = Countries::findById( $request['default_location_id'] );
+				if ( ! $model || ! $model->published ) {
+					return new WP_Error( 400, 'Wrong default country' );
+				}
+				$options->setDefaultLocationId( $model->id );
+				$options->setDefaultLocationType( $request['default_location_type'] );
+				break;
 		}
-		$options->setDefaultCity( $city->id );
+
 		$options->setSeoMode( (int) $request['seo_mode'] );
 		$options->setCountryChooseEnabled( (bool) $request['country_choose_enabled'] );
 		$options->setProvinceChooseEnabled( (bool) $request['province_choose_enabled'] );
@@ -146,10 +171,3 @@ class OptionsController extends BaseController {
 	}
 }
 
-// Function to register our new routes from the controller.
-function mcs_register_options_routes() {
-	$controller = new OptionsController();
-	$controller->register_routes();
-}
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_options_routes' );

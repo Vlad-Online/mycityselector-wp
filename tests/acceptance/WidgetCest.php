@@ -184,4 +184,27 @@ class WidgetCest extends BaseCest {
 		$i->click( '#mcs-city-' . $this->defaultCity->getId() . ' span' );
 		$i->assertEquals( Acceptance::BASE_DOMAIN, $i->getHost() );
 	}
+
+	/**
+	 * @param User $i
+	 *
+	 * @throws Exception
+	 */
+	public function testSubFolderSeoModeListModeCities( User $i ) {
+		$i->getOptions()->setSeoMode( OptionsInterface::SEO_MODE_SUBFOLDER );
+		$i->updateWidgetOptions();
+		$i->amOnPage( '/' );
+		$i->waitForElement( '#mcs-popup p' );
+		$i->see( 'Is ' . $this->defaultCity->getTitle() . ' your city', '#mcs-popup p' );
+		$i->click( '#mcs-popup-no' );
+		$i->waitForElementVisible( '#mcs-dialog' );
+
+		$i->click( '#mcs-city-' . $this->notDefaultCity->getId() . ' span' );
+		$i->seeCurrentUrlEquals( '/' . $this->notDefaultCity->getSubDomain() . '/' );
+
+		$i->click( '#mcs-link' );
+		$i->waitForElementVisible( '#mcs-dialog' );
+		$i->click( '#mcs-city-' . $this->defaultCity->getId() . ' span' );
+		$i->seeCurrentUrlEquals( '/' );
+	}
 }

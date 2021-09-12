@@ -38,6 +38,7 @@ abstract class BaseController extends WP_REST_Controller {
 			return $error;
 		}
 
+		/** @var ModelInterface $modelClass */
 		$modelClass = 'Mcs\WpModels\\' . $modelName;
 		$model      = $modelClass::findById( (int) $id );
 		if ( empty( $model ) || empty( $model->id ) ) {
@@ -366,6 +367,7 @@ abstract class BaseController extends WP_REST_Controller {
 	 */
 	public function get_items( $request ) {
 		global $wpdb;
+		/** @var ModelInterface $modelClass */
 		$modelClass = 'Mcs\WpModels\\' . $this->getModelName();
 
 		$filter      = $request['filter'];
@@ -487,6 +489,7 @@ abstract class BaseController extends WP_REST_Controller {
 		}
 
 		$preparedData = (array) $this->prepare_item_for_database( $request );
+		/** @var ModelInterface $className */
 		$className    = 'Mcs\WpModels\\' . $modelName;
 		try {
 			$model = $className::create( $preparedData );
@@ -521,6 +524,7 @@ abstract class BaseController extends WP_REST_Controller {
 	 * @throws Exception
 	 */
 	public function get_item( $request ) {
+		/** @var ModelInterface $className */
 		$className = 'Mcs\WpModels\\' . $this->getModelName();
 		$id        = (int) $request['id'];
 		$model     = $className::findById( $id );

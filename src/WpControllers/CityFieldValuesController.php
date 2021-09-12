@@ -87,10 +87,3 @@ class CityFieldValuesController extends BaseController {
 	}
 }
 
-// Function to register our new routes from the controller.
-function mcs_register_city_field_values_routes() {
-	$controller = new CityFieldValuesController();
-	$controller->register_routes();
-}
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_city_field_values_routes' );

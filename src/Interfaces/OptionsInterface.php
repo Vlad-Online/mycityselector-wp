@@ -13,16 +13,22 @@ interface OptionsInterface {
 
 	public function getBaseDomain(): string;
 
-	public function setBaseDomain( string $domain ): bool;
+//	public function setBaseDomain( string $domain ): bool;
 
-	public function getDefaultCity(): ?CitiesInterface;
+	public function getDefaultLocation(): ?ModelInterface;
+
+	public function getDefaultLocationId();
+
+	public function getDefaultLocationType();
+
+	public function setDefaultLocationType( int $locationType );
 
 	/**
-	 * @param CitiesInterface $defaultCity
+	 * @param int|null $defaultLocationId
 	 *
 	 * @return bool
 	 */
-	public function setDefaultCity(CitiesInterface $defaultCity ): bool;
+	public function setDefaultLocationId( int $defaultLocationId = null ): bool;
 
 	public function getSeoMode(): int;
 

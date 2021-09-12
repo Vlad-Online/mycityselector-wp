@@ -24,6 +24,11 @@ export interface McsOptions {
 		| typeof SEO_MODE_COOKIE
 		| typeof SEO_MODE_SUBDOMAIN
 		| typeof SEO_MODE_SUBFOLDER;
-	default_city_id: number | null;
+	default_location_id: number | null;
+	default_location_type:
+		| typeof LOCATION_TYPE_CITY
+		| typeof LOCATION_TYPE_PROVINCE
+		| typeof LOCATION_TYPE_COUNTRY
+		| null;
 	base_domain: string;
 }

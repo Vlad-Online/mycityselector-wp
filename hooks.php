@@ -2,6 +2,15 @@
 
 use Mcs\Data;
 use Mcs\Interfaces\OptionsInterface;
+use Mcs\WpControllers\CitiesController;
+use Mcs\WpControllers\CityFieldValuesController;
+use Mcs\WpControllers\CountriesController;
+use Mcs\WpControllers\CountryFieldValuesController;
+use Mcs\WpControllers\FieldsController;
+use Mcs\WpControllers\FieldValuesController;
+use Mcs\WpControllers\OptionsController;
+use Mcs\WpControllers\ProvinceFieldValuesController;
+use Mcs\WpControllers\ProvincesController;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -79,23 +88,6 @@ function mcs_register_options() {
 		'description' => 'Debug enabled',
 		'default'     => false
 	] );
-
-	// Register a new section in the "mcs" page.
-//	add_settings_section(
-//		'mcs_section_base',
-//		'Base options',
-//		null,
-//		'mcs'
-//	);
-
-	// Register a new field in the "mcs_section_developers" section, inside the "mcs" page.
-//	add_settings_field(
-//		'mcs_base_domain', // As of WP 4.6 this value is used only internally.
-//		'Base domain',
-//		'mcs_base_domain_cb',
-//		'mcs',
-//		'mcs_section_base'
-//	);
 }
 
 function mcs_remove_admin_css( $styles ) {
@@ -132,7 +124,7 @@ function mcs_options_page() {
 	);
 }
 
-function mcs_start_ob() {
+function mcs_process() {
 	if ( ! is_admin() ) {
 		ob_start( function ( $body ) {
 			return Data::getInstance()->replaceTags( $body );
@@ -199,4 +191,16 @@ function mcs_options_page_html() {
 		</form>
 	</div>
 	<?php
+}
+
+function mcs_register_routes() {
+	(new CitiesController())->register_routes();
+	(new ProvincesController())->register_routes();
+	(new CountriesController())->register_routes();
+	(new CityFieldValuesController())->register_routes();
+	(new ProvinceFieldValuesController())->register_routes();
+	(new CountryFieldValuesController())->register_routes();
+	(new FieldsController())->register_routes();
+	(new FieldValuesController())->register_routes();
+	(new OptionsController())->register_routes();
 }

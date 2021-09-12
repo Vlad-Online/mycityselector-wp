@@ -39,10 +39,11 @@ export interface McsData {
 	provinces: { [key: number]: McsProvince };
 	cities: { [key: number]: McsCity };
 	current_location_id: number;
-	current_location_type:
-		| typeof LOCATION_TYPE_CITY
-		| typeof LOCATION_TYPE_PROVINCE
-		| typeof LOCATION_TYPE_COUNTRY;
+	current_location_type: McsLocationType;
 }
 
 export type McsLocation = McsCity | McsProvince | McsCountry;
+export type McsLocationType =
+	| typeof LOCATION_TYPE_CITY
+	| typeof LOCATION_TYPE_PROVINCE
+	| typeof LOCATION_TYPE_COUNTRY;

@@ -4,6 +4,7 @@
 use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CityFieldValuesInterface;
 use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\FieldsInterface;
 use Mcs\Interfaces\FieldValuesInterface;
 use Mcs\Interfaces\ModelInterface;
@@ -101,7 +102,8 @@ class BaseCest {
 		] );
 		$this->cities[]    = $this->defaultCity;
 
-		$options->setDefaultCity( $this->defaultCity );
+		$options->setDefaultLocationType( DataInterface::LOCATION_TYPE_CITY );
+		$options->setDefaultLocationId( $this->defaultCity->id );
 
 		$country->update( [
 			'default_city_id' => $this->defaultCity->id

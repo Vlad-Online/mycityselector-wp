@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name:     MyCitySelector
- * Plugin URI:      PLUGIN SITE HERE
+ * Plugin Name:     MyCitySelector for WordPress
+ * Plugin URI:      https://mycityselector.com
  * Description:     City selector plugin.
  * Author:          Vlad Smolensky
- * Author URI:      YOUR SITE HERE
+ * Author URI:      vlad@smolensky.info
  * Text Domain:     mcs
  * Domain Path:     /languages
  * Version:         0.0.1
@@ -26,22 +26,14 @@ if ( ! defined( 'MCS_PREFIX' ) ) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/hooks.php';
-require_once __DIR__ . '/src/WpControllers/CountriesController.php';
-require_once __DIR__ . '/src/WpControllers/ProvincesController.php';
-require_once __DIR__ . '/src/WpControllers/CitiesController.php';
-require_once __DIR__ . '/src/WpControllers/FieldsController.php';
-require_once __DIR__ . '/src/WpControllers/FieldValuesController.php';
-require_once __DIR__ . '/src/WpControllers/CountryFieldValuesController.php';
-require_once __DIR__ . '/src/WpControllers/ProvinceFieldValuesController.php';
-require_once __DIR__ . '/src/WpControllers/CityFieldValuesController.php';
-require_once __DIR__ . '/src/WpControllers/OptionsController.php';
 
 register_activation_hook( __FILE__, 'activate_mcs_plugin' );
 register_deactivation_hook( __FILE__, 'deactivate_mcs_plugin' );
 register_uninstall_hook( __FILE__, 'uninstall_mcs_plugin' );
 
 add_action( 'admin_menu', 'mcs_options_page' );
-add_action( 'init', 'mcs_start_ob' );
+add_action( 'init', 'mcs_process' );
+add_action( 'rest_api_init', 'mcs_register_routes' );
 add_action( 'admin_enqueue_scripts', 'mcs_admin_enqueue_scripts' );
 add_action( 'admin_init', 'mcs_register_options' );
 

@@ -17,8 +17,8 @@ class User extends AcceptanceTester {
 	 * @throws Exception
 	 */
 	public function configurePlugin() {
-		$options = $this->getOptions();
-		$options->setBaseDomain( Acceptance::BASE_DOMAIN );
+//		$options = $this->getOptions();
+//		$options->setBaseDomain( Acceptance::BASE_DOMAIN );
 	}
 
 	public function getPost(): WP_Post {

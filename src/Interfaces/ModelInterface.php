@@ -48,4 +48,6 @@ interface ModelInterface {
 	public static function getTableName(): string;
 
 	public function getProperties(): array;
+
+	public function getType(): int;
 }

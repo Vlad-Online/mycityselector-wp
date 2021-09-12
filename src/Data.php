@@ -158,17 +158,17 @@ class Data implements DataInterface {
 	public function getCurrentLocation(): ?ModelInterface {
 		if ( empty( $this->currentLocation ) ) {
 			switch ( $this->options->getSeoMode() ) {
-				case Options::SEO_MODE_COOKIE:
+				case OptionsInterface::SEO_MODE_COOKIE:
 					$this->detectCurrentLocationFromCookie();
 					break;
-				case Options::SEO_MODE_SUBDOMAIN:
+				case OptionsInterface::SEO_MODE_SUBDOMAIN:
 					$this->detectCurrentLocationFromSubdomain();
 					break;
-				case Options::SEO_MODE_SUBFOLDER:
+				case OptionsInterface::SEO_MODE_SUBFOLDER:
 					$this->detectCurrentLocationFromSubFolder();
 					break;
 				default:
-					$this->currentLocation     = $this->options->getDefaultCity();
+					$this->currentLocation     = $this->options->getDefaultLocation();
 					$this->currentLocationType = self::LOCATION_TYPE_CITY;
 			}
 		}
@@ -206,8 +206,8 @@ class Data implements DataInterface {
 				break;
 		}
 		if ( empty( $this->currentLocation ) ) {
-			$this->currentLocation     = $this->options->getDefaultCity();
-			$this->currentLocationType = self::LOCATION_TYPE_CITY;
+			$this->currentLocation     = $this->options->getDefaultLocation();
+			$this->currentLocationType = $this->options->getDefaultLocationType();
 		}
 	}
 
@@ -215,43 +215,67 @@ class Data implements DataInterface {
 	protected function detectCurrentLocationFromSubdomain() {
 		$host      = $_SERVER['HTTP_HOST'];
 		$subdomain = trim( str_ireplace( $this->options->getBaseDomain(), '', $host ), '.' );
-		if ( ! empty( $subdomain ) ) {
-			try {
-				$city = Cities::findFirstByPropertyValue( 'subdomain', $subdomain );
-				if ( $city && $city->isPublished() && $city->getProvince()->isPublished() && $city->getCountry()->isPublished() ) {
-					$this->currentLocation     = $city;
-					$this->currentLocationType = self::LOCATION_TYPE_CITY;
-					return;
-				}
-				$province = Provinces::findFirstByPropertyValue( 'subdomain', $subdomain );
-				if ( $province && $province->isPublished() && $province->getCountry()->isPublished() ) {
-					$this->currentLocation     = $province;
-					$this->currentLocationType = self::LOCATION_TYPE_PROVINCE;
 
-					return;
-				}
-
-				$country = Countries::findFirstByPropertyValue( 'subdomain', $subdomain );
-				if ( $country && $country->isPublished() ) {
-					$this->currentLocation     = $country;
-					$this->currentLocationType = self::LOCATION_TYPE_COUNTRY;
-
-					return;
-				}
-			} catch (Exception $exception) {
-
+		try {
+			if ( ! empty( $subdomain ) && $this->setLocationBySubdomain( $subdomain ) ) {
+				return;
 			}
+		} catch ( Exception $exception ) {
+
 		}
 
-		$this->currentLocation     = $this->options->getDefaultCity();
-		$this->currentLocationType = self::LOCATION_TYPE_CITY;
+		$this->currentLocation     = $this->options->getDefaultLocation();
+		$this->currentLocationType = $this->options->getDefaultLocationType();
+	}
+
+	protected function detectCurrentLocationFromSubFolder() {
+		$uri = ltrim( $_SERVER['REQUEST_URI'], '/' );
+		try {
+			if (
+				preg_match( '#[^/?]+#', $uri, $matches )
+				&& ! empty( $matches[0] )
+				&& $this->setLocationBySubdomain( $matches[0] ) ) {
+				return;
+			}
+		} catch ( Exception $exception ) {
+
+		}
+
+		$this->currentLocation     = $this->options->getDefaultLocation();
+		$this->currentLocationType = $this->options->getDefaultLocationType();
 	}
 
 	/**
-	 * @return CountriesInterface|ProvincesInterface|CitiesInterface
+	 * @param string $subdomain
+	 *
+	 * @return bool
+	 * @throws Exception
 	 */
-	protected function detectCurrentLocationFromSubFolder() {
-		//TODO
+	protected function setLocationBySubdomain( string $subdomain ) {
+		$city = Cities::findFirstByPropertyValue( 'subdomain', $subdomain );
+		if ( $city && $city->isPublished() && $city->getProvince()->isPublished() && $city->getCountry()->isPublished() ) {
+			$this->currentLocation     = $city;
+			$this->currentLocationType = self::LOCATION_TYPE_CITY;
+
+			return true;
+		}
+		$province = Provinces::findFirstByPropertyValue( 'subdomain', $subdomain );
+		if ( $province && $province->isPublished() && $province->getCountry()->isPublished() ) {
+			$this->currentLocation     = $province;
+			$this->currentLocationType = self::LOCATION_TYPE_PROVINCE;
+
+			return true;
+		}
+
+		$country = Countries::findFirstByPropertyValue( 'subdomain', $subdomain );
+		if ( $country && $country->isPublished() ) {
+			$this->currentLocation     = $country;
+			$this->currentLocationType = self::LOCATION_TYPE_COUNTRY;
+
+			return true;
+		}
+
+		return false;
 	}
 
 

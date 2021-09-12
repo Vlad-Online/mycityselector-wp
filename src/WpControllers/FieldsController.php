@@ -86,11 +86,3 @@ class FieldsController extends BaseController {
 		return $this->rest_base;
 	}
 }
-
-// Function to register our new routes from the controller.
-function mcs_register_fields_routes() {
-	$controller = new FieldsController();
-	$controller->register_routes();
-}
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_fields_routes' );

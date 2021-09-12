@@ -86,10 +86,3 @@ class ProvinceFieldValuesController extends BaseController {
 		return $this->rest_base;
 	}
 }
-
-// Function to register our new routes from the controller.
-function mcs_register_province_field_values_routes() {
-	( new ProvinceFieldValuesController() )->register_routes();
-}
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_province_field_values_routes' );

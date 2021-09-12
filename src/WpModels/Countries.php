@@ -5,6 +5,7 @@ namespace Mcs\WpModels;
 
 use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\DataInterface;
 
 class Countries extends BaseModel implements CountriesInterface {
 
@@ -131,5 +132,9 @@ class Countries extends BaseModel implements CountriesInterface {
 
 	public function isPublished(): bool {
 		return $this->published;
+	}
+
+	public function getType(): int {
+		return DataInterface::LOCATION_TYPE_COUNTRY;
 	}
 }

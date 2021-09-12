@@ -3,33 +3,52 @@
 
 namespace Mcs\WpModels;
 
-use Mcs\Interfaces\CitiesInterface;
+use Mcs\Interfaces\DataInterface;
+use Mcs\Interfaces\ModelInterface;
 use Mcs\Interfaces\OptionsInterface;
 
 class Options implements OptionsInterface {
 
 	public function getBaseDomain(): string {
-		return (string) get_option( 'mcs_base_domain' );
+		$siteUrl = site_url();
+		//		return (string) get_option( 'mcs_base_domain' );
+		return parse_url( $siteUrl, PHP_URL_HOST );
 	}
 
-	public function setBaseDomain( string $domain ): bool {
-		return update_option( 'mcs_base_domain', $domain );
-	}
+//	public function setBaseDomain( string $domain ): bool {
+//		return update_option( 'mcs_base_domain', $domain );
+//	}
 
-	public function getDefaultCity(): ?CitiesInterface {
-		static $city;
-		if ( empty( $city ) ) {
-			$city = Cities::findById( (int) get_option( 'mcs_default_city_id' ) );
-			if ( empty( $city ) ) {
-				$city = Cities::all( 1 )[0] ?? null;
+	public function getDefaultLocation(): ?ModelInterface {
+		static $model;
+		if ( empty( $model ) ) {
+			switch ( $this->getDefaultLocationType() ) {
+				case DataInterface::LOCATION_TYPE_CITY:
+					$city = Cities::findById( $this->getDefaultLocationId() );
+					if ( $city ) {
+						$model = $city;
+					}
+					break;
+				case DataInterface::LOCATION_TYPE_PROVINCE:
+					$province = Provinces::findById( $this->getDefaultLocationId() );
+					if ( $province ) {
+						$model = $province;
+					}
+					break;
+				case DataInterface::LOCATION_TYPE_COUNTRY:
+					$country = Countries::findById( $this->getDefaultLocationId() );
+					if ( $country ) {
+						$model = $country;
+					}
+					break;
 			}
 		}
 
-		return $city;
+		return $model;
 	}
 
-	public function setDefaultCity( CitiesInterface $defaultCity ): bool {
-		return update_option( 'mcs_default_city_id', $defaultCity->getId() );
+	public function setDefaultLocationId( int $defaultLocationId = null ): bool {
+		return update_option( 'mcs_default_location_id', $defaultLocationId );
 	}
 
 	public function getSeoMode(): int {
@@ -89,12 +108,13 @@ class Options implements OptionsInterface {
 	}
 
 	public function toArray(): array {
-		$defaultCity = $this->getDefaultCity();
+		$defaultLocation = $this->getDefaultLocation();
 
 		return [
 			'id'                      => 0,
-			'base_domain'             => $this->getBaseDomain(),
-			'default_city_id'         => $defaultCity ? $defaultCity->getId() : null,
+			//			'base_domain'             => $this->getBaseDomain(),
+			'default_location_id'     => $defaultLocation ? $defaultLocation->getId() : null,
+			'default_location_type'   => $defaultLocation ? $defaultLocation->getType() : null,
 			'seo_mode'                => $this->getSeoMode(),
 			'country_choose_enabled'  => $this->getCountryChooseEnabled(),
 			'province_choose_enabled' => $this->getProvinceChooseEnabled(),
@@ -112,5 +132,17 @@ class Options implements OptionsInterface {
 		}
 
 		return $options;
+	}
+
+	public function setDefaultLocationType( int $locationType ) {
+		return update_option( 'mcs_default_location_type', $locationType );
+	}
+
+	public function getDefaultLocationId() {
+		return get_option( 'mcs_default_location_id' );
+	}
+
+	public function getDefaultLocationType() {
+		return get_option( 'mcs_default_location_type' );
 	}
 }

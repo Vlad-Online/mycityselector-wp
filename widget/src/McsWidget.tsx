@@ -16,23 +16,24 @@ import { ListCountriesProvincesCities } from "./ListCountriesProvincesCities";
 import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
 import { ListCities } from "./ListCities";
 import {
+	COOKIE_DISABLE_POPUP,
+	COOKIE_LOCATION_ID,
+	COOKIE_LOCATION_TYPE,
 	LIST_MODE_CITIES,
 	LIST_MODE_COUNTRIES,
 	LIST_MODE_COUNTRIES_CITIES,
 	LIST_MODE_COUNTRIES_PROVINCES_CITIES,
 	LIST_MODE_PROVINCES_CITIES,
-	COOKIE_LOCATION_ID,
 	LOCATION_TYPE_CITY,
-	COOKIE_LOCATION_TYPE,
 	LOCATION_TYPE_COUNTRY,
 	LOCATION_TYPE_PROVINCE,
 	SEO_MODE_COOKIE,
-	COOKIE_DISABLE_POPUP,
 	SEO_MODE_SUBDOMAIN,
+	SEO_MODE_SUBFOLDER,
 } from "./constants";
 import _ from "lodash";
 import { McsOptions } from "./types/options";
-import { McsCity, McsData, McsLocation } from "./types/data";
+import { McsData, McsLocation, McsLocationType } from "./types/data";
 import { useCookies } from "react-cookie";
 import { ClassNameMap } from "@material-ui/styles/withStyles/withStyles";
 import { McsPopup } from "./McsPopup";
@@ -43,10 +44,7 @@ import { ListCountries } from "./ListCountries";
 export type handleLocationSelectFn = (location: McsLocation) => void;
 export type handleLocationAndTypeSelectFn = (
 	location: McsLocation,
-	mcsLocationConstType:
-		| typeof LOCATION_TYPE_CITY
-		| typeof LOCATION_TYPE_PROVINCE
-		| typeof LOCATION_TYPE_COUNTRY
+	mcsLocationConstType: McsLocationType
 ) => void;
 
 export const McsTheme = createMuiTheme({
@@ -117,6 +115,7 @@ interface McsWidgetProps {
 	options: McsOptions;
 	data: McsData;
 }
+
 export const McsWidget: React.FC<McsWidgetProps> = ({
 	options,
 	data,
@@ -134,7 +133,7 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 		typeof COOKIE_DISABLE_POPUP
 	>([COOKIE_DISABLE_POPUP]);
 
-	const cookieLocationType: number | undefined = _.get(
+	const cookieLocationType: McsLocationType | undefined = _.get(
 		locationTypeCookie,
 		COOKIE_LOCATION_TYPE
 	);
@@ -159,10 +158,25 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 	const [selectedCityId, setSelectedCityId] = useState<number | undefined>();
 	const linkRef = React.useRef();
 
-	let defaultCity: McsCity = data.cities[Object.keys(data.cities)[0]];
+	let defaultLocation: McsLocation =
+		data.countries[Object.keys(data.countries)[0]];
+	let defaultLocationType: McsLocationType = LOCATION_TYPE_COUNTRY;
 
-	if (options.default_city_id) {
-		defaultCity = data.cities[options.default_city_id];
+	if (options.default_location_id && options.default_location_type) {
+		switch (options.default_location_type) {
+			case LOCATION_TYPE_CITY:
+				defaultLocation = data.cities[options.default_location_id];
+				defaultLocationType = LOCATION_TYPE_CITY;
+				break;
+			case LOCATION_TYPE_PROVINCE:
+				defaultLocation = data.provinces[options.default_location_id];
+				defaultLocationType = LOCATION_TYPE_PROVINCE;
+				break;
+			case LOCATION_TYPE_COUNTRY:
+				defaultLocation = data.countries[options.default_location_id];
+				defaultLocationType = LOCATION_TYPE_COUNTRY;
+				break;
+		}
 	}
 
 	const handleClose = () => {
@@ -224,38 +238,104 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 					setLocationIdCookie(COOKIE_LOCATION_ID, mcsLocation.id, {
 						domain: `.${options.base_domain}`,
 					});
+				}
 
+				if (
+					data.current_location_id != mcsLocation.id ||
+					data.current_location_type != mcsLocationConstType
+				) {
+					const url = new URL(window.location.href);
+					let newHost;
 					if (
-						data.current_location_id != mcsLocation.id ||
-						data.current_location_type != mcsLocationConstType
+						mcsLocationConstType == defaultLocationType &&
+						mcsLocation.id == defaultLocation.id
 					) {
-						const url = new URL(window.location.href);
-						let newHost;
-						if (
-							mcsLocationConstType == LOCATION_TYPE_CITY &&
-							mcsLocation.id == options.default_city_id
-						) {
-							newHost = options.base_domain;
-						} else {
-							newHost = `${mcsLocation.subdomain}.${options.base_domain}`;
-						}
+						newHost = options.base_domain;
+					} else {
+						newHost = `${mcsLocation.subdomain}.${options.base_domain}`;
+					}
 
-						if (url.hostname != newHost) {
-							url.hostname = newHost;
-							location.replace(url.href);
-						}
+					if (url.hostname != newHost) {
+						url.hostname = newHost;
+						location.replace(url.href);
 					}
 				}
 			},
 			[
-				cookieLocationId,
 				cookieLocationType,
+				cookieLocationId,
+				setLocationTypeCookie,
 				options.base_domain,
+				setLocationIdCookie,
 				data.current_location_id,
 				data.current_location_type,
-				options.default_city_id,
-				setLocationIdCookie,
+				defaultLocationType,
+				defaultLocation.id,
+			]
+		);
+
+	const handleLocationSelectSubFolderMode: handleLocationAndTypeSelectFn =
+		useCallback(
+			(mcsLocation, mcsLocationConstType) => {
+				// console.log("mcsLocation", mcsLocation);
+				// console.log("mcsLocationConstType", mcsLocationConstType);
+				if (
+					cookieLocationType != mcsLocationConstType ||
+					cookieLocationId != mcsLocation.id
+				) {
+					setLocationTypeCookie(
+						COOKIE_LOCATION_TYPE,
+						mcsLocationConstType,
+						{
+							domain: `.${options.base_domain}`,
+						}
+					);
+					setLocationIdCookie(COOKIE_LOCATION_ID, mcsLocation.id, {
+						domain: `.${options.base_domain}`,
+					});
+				}
+
+				if (
+					data.current_location_id != mcsLocation.id ||
+					data.current_location_type != mcsLocationConstType
+				) {
+					const url = new URL(window.location.href);
+					if (
+						data.current_location_id == defaultLocation.id &&
+						data.current_location_type == defaultLocationType
+					) {
+						// console.log("replace default");
+						url.pathname =
+							`/${mcsLocation.subdomain}` + url.pathname;
+					} else {
+						// console.log("replace custom");
+						// console.log(url.pathname);
+						if (
+							mcsLocation.id == defaultLocation.id &&
+							mcsLocationConstType == defaultLocationType
+						) {
+							url.pathname = url.pathname.replace(/\/[^/?]+/, "");
+						} else {
+							url.pathname = url.pathname.replace(
+								/\/[^/?]+/,
+								`/${mcsLocation.subdomain}`
+							);
+						}
+					}
+					// console.log(url.pathname);
+					location.replace(url.href);
+				}
+			},
+			[
+				cookieLocationType,
+				cookieLocationId,
 				setLocationTypeCookie,
+				options.base_domain,
+				setLocationIdCookie,
+				data.current_location_id,
+				data.current_location_type,
+				defaultLocationType,
+				defaultLocation.id,
 			]
 		);
 
@@ -274,6 +354,12 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 						mcsLocationType
 					);
 					break;
+				case SEO_MODE_SUBFOLDER:
+					handleLocationSelectSubFolderMode(
+						mcsLocation,
+						mcsLocationType
+					);
+					break;
 			}
 
 			if (mcsLocationType == LOCATION_TYPE_CITY) {
@@ -288,6 +374,7 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 		},
 		[
 			handleLocationSelectCookieMode,
+			handleLocationSelectSubFolderMode,
 			handleLocationSelectSubdomainMode,
 			options.base_domain,
 			options.seo_mode,
@@ -324,8 +411,8 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 			case LOCATION_TYPE_COUNTRY:
 				return data.countries[data.current_location_id];
 			default:
-				return options.default_city_id
-					? data.cities[options.default_city_id]
+				return options.default_location_id
+					? data.cities[options.default_location_id]
 					: null;
 		}
 	};
@@ -350,8 +437,13 @@ export const McsWidget: React.FC<McsWidgetProps> = ({
 				<McsPopup
 					showPopup={showPopup}
 					onClose={() => setShowPopup(false)}
-					title={defaultCity.title}
-					handleLocationSelect={() => handleCitySelect(defaultCity)}
+					title={defaultLocation.title}
+					handleLocationSelect={() =>
+						handleLocationSelect(
+							defaultLocation,
+							defaultLocationType
+						)
+					}
 					handleClose={handleShowDialog}
 					//@ts-ignore
 					anchorEl={() => linkRef.current}

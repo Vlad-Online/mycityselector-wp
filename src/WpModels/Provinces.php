@@ -6,6 +6,7 @@ namespace Mcs\WpModels;
 use Exception;
 use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\ProvincesInterface;
 
 class Provinces extends BaseModel implements ProvincesInterface {
@@ -94,5 +95,9 @@ class Provinces extends BaseModel implements ProvincesInterface {
 
 	public function getCountry(): CountriesInterface {
 		return Countries::findById( $this->country_id );
+	}
+
+	public function getType(): int {
+		return DataInterface::LOCATION_TYPE_PROVINCE;
 	}
 }

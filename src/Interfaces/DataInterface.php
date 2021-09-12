@@ -11,6 +11,7 @@ interface DataInterface {
 	const LIST_MODE_COUNTRIES_CITIES = 4;
 	const LIST_MODE_COUNTRIES = 5;
 
+	const LOCATION_TYPE_NONE = 0;
 	const LOCATION_TYPE_CITY = 1;
 	const LOCATION_TYPE_PROVINCE = 2;
 	const LOCATION_TYPE_COUNTRY = 3;

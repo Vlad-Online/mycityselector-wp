@@ -3,7 +3,7 @@
 
 use Step\Acceptance\Admin;
 
-class AdminCest {
+class AdminCest extends BaseCest {
 	/**
 	 * @param Admin $I
 	 *

@@ -105,11 +105,3 @@ class CitiesController extends BaseController {
 		return $this->rest_base;
 	}
 }
-
-// Function to register our new routes from the controller.
-function mcs_register_cities_routes() {
-	$controller = new CitiesController();
-	$controller->register_routes();
-}
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\mcs_register_cities_routes' );

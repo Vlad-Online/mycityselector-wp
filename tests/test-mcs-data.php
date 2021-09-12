@@ -3,6 +3,7 @@
 use Mcs\Data;
 use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
+use Mcs\Interfaces\ModelInterface;
 use Mcs\Interfaces\ProvincesInterface;
 use Mcs\WpModels\Cities;
 use Mcs\WpModels\Countries;
@@ -53,6 +54,9 @@ class testMcsData extends TestCase {
 
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	protected function tearDown() {
 		$this->country->default_city_id = null;
 		$this->country->update( get_object_vars( $this->country ) );
@@ -70,7 +74,7 @@ class testMcsData extends TestCase {
 				$this->defaultCityId = $defaultCityId;
 			}
 
-			public function getDefaultCity(): int {
+			public function getDefaultLocation(): ModelInterface  {
 				return $this->defaultCityId;
 			}
 		} );

@@ -4,6 +4,7 @@
 namespace Mcs\WpModels;
 
 use Exception;
+use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\ModelInterface;
 
 abstract class BaseModel implements ModelInterface {
@@ -207,4 +208,8 @@ abstract class BaseModel implements ModelInterface {
 	abstract public static function getTableName(): string;
 
 	abstract public function getProperties(): array;
+
+	public function getType(): int {
+		return DataInterface::LOCATION_TYPE_NONE;
+	}
 }
