@@ -26,7 +26,7 @@ import React from "react";
 const dataProvider = mcsDataProvider("/?rest_route=/mcs/v1");
 
 export const App: FC = () => (
-	<Admin dataProvider={dataProvider} layout={McsLayout}>
+	<Admin dataProvider={dataProvider} layout={McsLayout} disableTelemetry>
 		<Resource
 			name="Countries"
 			list={CountriesList}
@@ -70,5 +70,3 @@ export const App: FC = () => (
 		<Resource name="Options" edit={OptionsEdit} />
 	</Admin>
 );
-
-// export default App;

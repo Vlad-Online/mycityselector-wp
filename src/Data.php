@@ -25,7 +25,7 @@ class Data implements DataInterface {
 
 	/**
 	 * Current detected location (Country, Province or City)
-	 * @var null|ModelInterface
+	 * @var null|CitiesInterface|ProvincesInterface|CountriesInterface
 	 */
 	protected $currentLocation = null;
 
@@ -228,13 +228,14 @@ class Data implements DataInterface {
 		$this->currentLocationType = $this->options->getDefaultLocationType();
 	}
 
-	protected function detectCurrentLocationFromSubFolder() {
+	protected function detectCurrentLocationFromSubFolder(): void {
 		$uri = ltrim( $_SERVER['REQUEST_URI'], '/' );
 		try {
 			if (
 				preg_match( '#[^/?]+#', $uri, $matches )
 				&& ! empty( $matches[0] )
 				&& $this->setLocationBySubdomain( $matches[0] ) ) {
+				$_SERVER['REQUEST_URI'] = str_replace( "/{$this->currentLocation->getSubDomain()}", '', $_SERVER['REQUEST_URI'] );
 				return;
 			}
 		} catch ( Exception $exception ) {

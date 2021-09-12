@@ -11,6 +11,7 @@ use Mcs\WpControllers\FieldValuesController;
 use Mcs\WpControllers\OptionsController;
 use Mcs\WpControllers\ProvinceFieldValuesController;
 use Mcs\WpControllers\ProvincesController;
+use Mcs\WpModels\Options;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -126,10 +127,36 @@ function mcs_options_page() {
 
 function mcs_process() {
 	if ( ! is_admin() ) {
+		if ( Options::getInstance()->getSeoMode() == OptionsInterface::SEO_MODE_SUBFOLDER ) {
+			add_filter( 'do_parse_request', 'mcs_filter_uri' );
+			add_filter( 'home_url', 'mcs_filter_home_url' );
+		}
+
 		ob_start( function ( $body ) {
 			return Data::getInstance()->replaceTags( $body );
 		} );
 	}
+}
+
+function mcs_filter_home_url( $url ) {
+	$siteUrl  = site_url();
+	$options  = Options::getInstance();
+	$location = Data::getInstance()->getCurrentLocation();
+	if ( $location &&
+		 ( $location->getId() != $options->getDefaultLocationId()
+		   || $location->getType() != $options->getDefaultLocationType()
+		 )
+	) {
+		return str_replace( $siteUrl, $siteUrl . '/' . $location->getSubDomain(), $url );
+	}
+
+	return $url;
+}
+
+function mcs_filter_uri() {
+	Data::getInstance()->getCurrentLocation();
+
+	return true;
 }
 
 /**
@@ -194,13 +221,13 @@ function mcs_options_page_html() {
 }
 
 function mcs_register_routes() {
-	(new CitiesController())->register_routes();
-	(new ProvincesController())->register_routes();
-	(new CountriesController())->register_routes();
-	(new CityFieldValuesController())->register_routes();
-	(new ProvinceFieldValuesController())->register_routes();
-	(new CountryFieldValuesController())->register_routes();
-	(new FieldsController())->register_routes();
-	(new FieldValuesController())->register_routes();
-	(new OptionsController())->register_routes();
+	( new CitiesController() )->register_routes();
+	( new ProvincesController() )->register_routes();
+	( new CountriesController() )->register_routes();
+	( new CityFieldValuesController() )->register_routes();
+	( new ProvinceFieldValuesController() )->register_routes();
+	( new CountryFieldValuesController() )->register_routes();
+	( new FieldsController() )->register_routes();
+	( new FieldValuesController() )->register_routes();
+	( new OptionsController() )->register_routes();
 }

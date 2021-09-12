@@ -2,7 +2,7 @@
 /**
  * Plugin Name:     MyCitySelector for WordPress
  * Plugin URI:      https://mycityselector.com
- * Description:     City selector plugin.
+ * Description:     MyCitySelector plugin for WordPress. Detect user location, substitute any data depending of user location and much more...
  * Author:          Vlad Smolensky
  * Author URI:      vlad@smolensky.info
  * Text Domain:     mcs

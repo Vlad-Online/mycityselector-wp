@@ -89,13 +89,13 @@ const GridSimpleForm = (props: any) => {
 					source="seo_mode"
 					label="SEO mode"
 					choices={[
-						{ id: "0", name: "Disabled (example: wordpress.org)" },
+						{ id: "1", name: "Disabled (example: wordpress.org)" },
 						{
-							id: "1",
+							id: "2",
 							name: "Subdomain mode (example: new-york.wordpress.org)",
 						},
 						{
-							id: "2",
+							id: "3",
 							name: "Subfolder mode (example: wordpress.org/new-york)",
 						},
 					]}

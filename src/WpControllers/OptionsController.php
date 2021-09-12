@@ -8,7 +8,6 @@ use Mcs\WpModels\Countries;
 use Mcs\WpModels\Options;
 use Mcs\WpModels\Provinces;
 use WP_Error;
-use WP_REST_Response;
 
 class OptionsController extends BaseController {
 
@@ -106,13 +105,13 @@ class OptionsController extends BaseController {
 	 */
 	public function update_item( $request ) {
 		$options = new Options();
-		$domain  = filter_var( $request['base_domain'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME );
-		if ( ! $domain ) {
-			return new WP_REST_Response( [
-				'message' => 'Wrong domain name'
-			], 400 );
-		}
-		$options->setBaseDomain( $domain );
+//		$domain  = filter_var( $request['base_domain'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME );
+//		if ( ! $domain ) {
+//			return new WP_REST_Response( [
+//				'message' => 'Wrong domain name'
+//			], 400 );
+//		}
+//		$options->setBaseDomain( $domain );
 
 		switch ( $request['default_location_type'] ) {
 			case DataInterface::LOCATION_TYPE_CITY:
@@ -163,9 +162,9 @@ class OptionsController extends BaseController {
 
 		// Return all of our comment response data.
 		$response = rest_ensure_response( $data );
-		$response->header( 'X-WP-Total', (int) 1 );
-		$response->header( 'X-WP-TotalPages', (int) 1 );
-		$response->header( 'Content-Range', "{$this->rest_base} {0}-{0}/{1}" );
+		$response->header( 'X-WP-Total', 1 );
+		$response->header( 'X-WP-TotalPages', 1 );
+		$response->header( 'Content-Range', "$this->rest_base {0}-{0}/{1}" );
 
 		return $response;
 	}

@@ -39,6 +39,9 @@ interface DataInterface {
 	 */
 	public function getWidgetDataJson(): string;
 
+	/**
+	 * @return null|CitiesInterface|ProvincesInterface|CountriesInterface
+	 */
 	public function getCurrentLocation(): ?ModelInterface;
 
 	public function getCurrentLocationType(): int;
