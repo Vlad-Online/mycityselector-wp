@@ -3,13 +3,8 @@
 namespace Mcs\WpControllers;
 
 use Exception;
-use Mcs\Interfaces\ModelInterface;
-use Mcs\WpModels\Cities;
 use stdClass;
-use WP_Error;
-use WP_HTTP_Response;
 use WP_REST_Request;
-use WP_REST_Response;
 
 class CitiesController extends BaseController {
 

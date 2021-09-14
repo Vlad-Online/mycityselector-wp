@@ -10,4 +10,4 @@ node_modules/
 vendor
 bin/install.sh
 widget/node_modules
-/build
+/build/mcs/

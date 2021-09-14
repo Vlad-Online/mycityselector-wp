@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name:     MyCitySelector for WordPress
+ * Plugin Name:     MyCitySelector
  * Plugin URI:      https://mycityselector.com
  * Description:     MyCitySelector plugin for WordPress. Detect user location, substitute any data depending on user location and much more...
  * Author:          Vlad Smolensky
  * Author URI:      vlad@smolensky.info
  * Text Domain:     mcs
- * Domain Path:     /languages
  * Version:         0.0.1
- * License: GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- *
+ * License:         GPL v2 or later
+ * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
+ * Requires at least: 5.8
+ * Requires PHP:    7.4
  * @package         Mcs
  */
 
-// If this file is called directly, abort.
 use Mcs\WpModels\McsWidget;
 
+// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }

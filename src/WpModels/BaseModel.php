@@ -105,7 +105,7 @@ abstract class BaseModel implements ModelInterface {
 		$table = ( new static() )->getTableName();
 		$query = "SELECT * FROM {$table}";
 		if ( $limit !== null ) {
-			$query .= ' limit ' . (int) $limit;
+			$query .= ' limit ' . $limit;
 		}
 		$modelsData = $wpdb->get_results( $query, 'ARRAY_A' );
 		$models     = [];
@@ -141,7 +141,7 @@ abstract class BaseModel implements ModelInterface {
 			throw new Exception( 'Error creating model' );
 		}
 		$model->fillProperties( $data );
-		$model->id = (int) $wpdb->insert_id;
+		$model->id = $wpdb->insert_id;
 
 		return $model;
 	}
@@ -176,7 +176,7 @@ abstract class BaseModel implements ModelInterface {
 	 */
 	public function delete(): bool {
 		global $wpdb;
-		if ( ! $wpdb->delete( $this->getTableName(), [ 'id' => (int) $this->id ], [ '%d' ] ) ) {
+		if ( ! $wpdb->delete( $this->getTableName(), [ 'id' => $this->id ], [ '%d' ] ) ) {
 			throw new Exception( 'Error delete model id: ' . $this->id );
 		}
 

@@ -1,6 +1,5 @@
 <?php
 
-use Mcs\Data;
 use Mcs\Interfaces\OptionsInterface;
 use Mcs\WpControllers\CitiesController;
 use Mcs\WpControllers\CityFieldValuesController;
@@ -11,6 +10,7 @@ use Mcs\WpControllers\FieldValuesController;
 use Mcs\WpControllers\OptionsController;
 use Mcs\WpControllers\ProvinceFieldValuesController;
 use Mcs\WpControllers\ProvincesController;
+use Mcs\WpModels\Data;
 use Mcs\WpModels\Options;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\StringInput;
@@ -92,7 +92,7 @@ function mcs_register_options() {
 }
 
 function mcs_remove_admin_css( $styles ) {
-	if ( ( $_REQUEST['page'] ?? '' ) == 'mcs' ) {
+	if (!empty($_REQUEST['page']) &&  substr($_REQUEST['page'], 0, 3) == 'mcs' ) {
 		return array_filter( $styles, function ( $value ) {
 			return $value !== 'forms';
 		} );
@@ -120,8 +120,7 @@ function mcs_options_page() {
 		'manage_options',
 		plugin_dir_path( __FILE__ ),
 		'mcs_main_html',
-		'',
-		20
+		plugin_dir_url( __FILE__ ) . 'assets/icon.svg'
 	);
 }
 

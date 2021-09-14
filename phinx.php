@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('DB_NAME')) {
-	require_once __DIR__ . '/../../../wp-config.php';
-}
+//if (!defined('DB_NAME')) {
+//	require_once __DIR__ . '/../../../wp-config.php';
+//}
 
 if (!defined('MCS_PREFIX')) {
 	define( 'MCS_PREFIX', 'mcs_' );

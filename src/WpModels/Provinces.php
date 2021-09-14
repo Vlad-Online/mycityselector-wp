@@ -4,7 +4,6 @@
 namespace Mcs\WpModels;
 
 use Exception;
-use Mcs\Interfaces\CitiesInterface;
 use Mcs\Interfaces\CountriesInterface;
 use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\ProvincesInterface;

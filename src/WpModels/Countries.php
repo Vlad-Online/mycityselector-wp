@@ -52,7 +52,7 @@ class Countries extends BaseModel implements CountriesInterface {
 		$tableName = Provinces::getTableName();
 
 		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT count(*) FROM {$tableName} WHERE country_id = %d",
-			(int) $this->id ) );
+			$this->id ) );
 	}
 
 	public function countCities() {
@@ -60,7 +60,7 @@ class Countries extends BaseModel implements CountriesInterface {
 		$tableName = Cities::getTableName();
 
 		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT count(*) FROM {$tableName} WHERE country_id = %d",
-			(int) $this->id ) );
+			$this->id ) );
 
 	}
 

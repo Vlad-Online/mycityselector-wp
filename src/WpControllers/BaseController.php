@@ -389,7 +389,7 @@ abstract class BaseController extends WP_REST_Controller {
 			$end       = (int) $rangeData[1] ?? $end;
 			$per_page  = $end - $start + 1;
 		}
-		$max_pages = (int) ceil( $total / (int) $per_page );
+		$max_pages = (int) ceil( $total / $per_page );
 
 		$sort       = $request['sort'];
 		$sortString = '';
@@ -420,8 +420,8 @@ abstract class BaseController extends WP_REST_Controller {
 
 		// Return all of our comment response data.
 		$response = rest_ensure_response( $data );
-		$response->header( 'X-WP-Total', (int) $total );
-		$response->header( 'X-WP-TotalPages', (int) $max_pages );
+		$response->header( 'X-WP-Total', $total );
+		$response->header( 'X-WP-TotalPages', $max_pages );
 		$response->header( 'Content-Range', "{$this->rest_base} {$start}-{$end}/{$total}" );
 
 		return $response;

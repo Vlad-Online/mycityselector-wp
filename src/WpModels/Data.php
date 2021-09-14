@@ -1,20 +1,17 @@
 <?php
 
-namespace Mcs;
+namespace Mcs\WpModels;
 
 use Exception;
 use Mcs\Interfaces\CitiesInterface;
+use Mcs\Interfaces\CookiesAdapterInterface;
 use Mcs\Interfaces\CountriesInterface;
 use Mcs\Interfaces\DataInterface;
 use Mcs\Interfaces\FieldsInterface;
 use Mcs\Interfaces\ModelInterface;
 use Mcs\Interfaces\OptionsInterface;
 use Mcs\Interfaces\ProvincesInterface;
-use Mcs\WpModels\Cities;
-use Mcs\WpModels\Countries;
-use Mcs\WpModels\Fields;
-use Mcs\WpModels\Options;
-use Mcs\WpModels\Provinces;
+use Mcs\WpAdapters\CookiesAdapter;
 
 class Data implements DataInterface {
 
@@ -22,6 +19,11 @@ class Data implements DataInterface {
 	 * @var OptionsInterface
 	 */
 	protected $options;
+
+	/**
+	 * @var CookiesAdapterInterface
+	 */
+	protected $cookies;
 
 	/**
 	 * Current detected location (Country, Province or City)
@@ -65,12 +67,9 @@ class Data implements DataInterface {
 	 *
 	 * @param OptionsInterface|null $options
 	 */
-	public function __construct( OptionsInterface $options = null ) {
-		if ( $options ) {
-			$this->options = $options;
-		} else {
-			$this->options = Options::getInstance();
-		}
+	public function __construct( OptionsInterface $options = null, CookiesAdapterInterface $cookies = null ) {
+		$this->options = $options ?: Options::getInstance();
+		$this->cookies = $cookies ?: new CookiesAdapter();
 	}
 
 	/**
@@ -180,8 +179,10 @@ class Data implements DataInterface {
 	 * Mutates currentLocation and currentLocationType
 	 */
 	protected function detectCurrentLocationFromCookie() {
-		$locationType = key_exists( 'mcs_location_type', $_COOKIE ) ? $_COOKIE['mcs_location_type'] : null;
-		$locationId   = $_COOKIE['mcs_location_id'] ?? null;
+//		$locationType = key_exists( 'mcs_location_type', $_COOKIE ) ? $_COOKIE['mcs_location_type'] : null;
+		$locationType = $this->cookies->getInt( 'mcs_location_type' );
+//		$locationId   = $_COOKIE['mcs_location_id'] ?? null;
+		$locationId = $this->cookies->getInt( 'mcs_location_id' );
 		switch ( $locationType ) {
 			case self::LOCATION_TYPE_CITY:
 				$model = Cities::findById( $locationId );
@@ -236,6 +237,7 @@ class Data implements DataInterface {
 				&& ! empty( $matches[0] )
 				&& $this->setLocationBySubdomain( $matches[0] ) ) {
 				$_SERVER['REQUEST_URI'] = str_replace( "/{$this->currentLocation->getSubDomain()}", '', $_SERVER['REQUEST_URI'] );
+
 				return;
 			}
 		} catch ( Exception $exception ) {

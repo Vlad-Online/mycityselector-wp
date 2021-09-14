@@ -5,7 +5,6 @@ import {
 	Edit,
 	ReferenceInput,
 	SimpleForm,
-	TextInput,
 	SelectInput,
 	useNotify,
 	useRefresh,
@@ -24,19 +23,22 @@ const OptionsToolbar = (props: any) => (
 // eslint-disable-next-line react/display-name
 const LocationInput = memo((props: any) => {
 	const { values } = useFormState();
-	console.log(values.default_location_type);
+	// console.log(values.default_location_type);
 	let reference = "Cities";
-	switch (values.default_location_type.toString()) {
-		case "1":
-			reference = "Cities";
-			break;
-		case "2":
-			reference = "Provinces";
-			break;
-		case "3":
-			reference = "Countries";
-			break;
+	if (values.default_location_type != null) {
+		switch (values.default_location_type.toString()) {
+			case "1":
+				reference = "Cities";
+				break;
+			case "2":
+				reference = "Provinces";
+				break;
+			case "3":
+				reference = "Countries";
+				break;
+		}
 	}
+
 	return (
 		<ReferenceInput
 			label="Default location"
